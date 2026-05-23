@@ -3,403 +3,790 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Zami — Generador de Influencers v2</title>
+<title>Zami AI Studio</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0 }
   body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: #0d0d0d;
-    color: #e8e8e8;
-    min-height: 100vh;
-    padding: 32px 16px;
+    background: #0d0d0d; color: #e8e8e8;
+    min-height: 100vh; padding: 32px 16px;
   }
-  .container { max-width: 900px; margin: 0 auto }
+  .container { max-width: 1080px; margin: 0 auto }
   h1 { font-size: 1.4rem; font-weight: 700; margin-bottom: 4px; color: #fff }
   .subtitle { font-size: 0.85rem; color: #666; margin-bottom: 28px }
-
-  .controls {
-    background: #161616;
-    border: 1px solid #2a2a2a;
-    border-radius: 14px;
-    padding: 20px;
-    margin-bottom: 24px;
+  .badge {
+    display: inline-block; background: #e85d8a22; border: 1px solid #e85d8a44;
+    color: #e85d8a; font-size: 0.65rem; font-weight: 700; padding: 2px 8px;
+    border-radius: 20px; letter-spacing: 0.06em; text-transform: uppercase;
+    vertical-align: middle; margin-left: 8px;
   }
   label { display: block; font-size: 0.78rem; font-weight: 600; color: #888; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em }
+  .controls {
+    background: #161616; border: 1px solid #2a2a2a;
+    border-radius: 14px; padding: 20px; margin-bottom: 24px;
+  }
   .row { display: flex; gap: 12px; margin-top: 14px; align-items: flex-end }
   button {
-    flex: 1;
-    padding: 11px 20px;
-    background: #e85d8a;
-    border: none;
-    border-radius: 10px;
-    color: #fff;
-    font-weight: 700;
-    font-size: 0.9rem;
-    cursor: pointer;
+    flex: 1; padding: 11px 20px; background: #e85d8a;
+    border: none; border-radius: 10px; color: #fff;
+    font-weight: 700; font-size: 0.9rem; cursor: pointer;
     transition: background .15s, opacity .15s;
   }
   button:hover:not(:disabled) { background: #d94c79 }
   button:disabled { opacity: .45; cursor: not-allowed }
-  input[type=text] {
-    width: 100%;
-    background: #0d0d0d;
-    border: 1px solid #2a2a2a;
-    border-radius: 10px;
-    color: #e8e8e8;
-    font-size: 0.9rem;
-    padding: 11px 14px;
-    font-family: inherit;
-    outline: none;
+  input[type=text], select, textarea {
+    width: 100%; background: #0d0d0d; border: 1px solid #2a2a2a;
+    border-radius: 10px; color: #e8e8e8; font-size: 0.9rem;
+    padding: 11px 14px; font-family: inherit; outline: none;
     transition: border-color .15s;
   }
-  input[type=text]:focus { border-color: #e85d8a }
+  input[type=text]:focus, select:focus, textarea:focus { border-color: #e85d8a }
+  select { cursor: pointer }
+  select option { background: #1a1a1a }
+  textarea { resize: vertical; min-height: 80px; line-height: 1.5 }
   .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px }
+  .four-col { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px }
+  .status-bar { font-size: 0.82rem; color: #888; margin-bottom: 20px; min-height: 1.2em }
+  .status-bar.error { color: #f87171 }
+  .status-bar.success { color: #4ade80 }
+
+  /* ── Toggle Sections ────────────────────────────────── */
+  .toggle-section { margin-top: 16px; border: 1px solid #2a2a2a; border-radius: 12px; overflow: hidden }
+  .toggle-header {
+    display: flex; align-items: center; gap: 12px; padding: 12px 16px;
+    background: #111; cursor: pointer; user-select: none;
+    transition: background .15s;
+  }
+  .toggle-header:hover { background: #181818 }
+  .toggle-label { font-size: 0.85rem; font-weight: 600; color: #ccc; flex: 1 }
+  .toggle-hint { font-size: 0.72rem; color: #555 }
+  .toggle-switch {
+    width: 44px; height: 24px; border-radius: 12px; background: #2a2a2a;
+    position: relative; transition: background .2s; flex-shrink: 0; cursor: pointer;
+    border: none; padding: 0;
+  }
+  .toggle-switch::after {
+    content: ''; position: absolute; top: 3px; left: 3px;
+    width: 18px; height: 18px; border-radius: 50%; background: #555;
+    transition: left .2s, background .2s;
+  }
+  .toggle-switch.on { background: #e85d8a33; border: 1px solid #e85d8a66 }
+  .toggle-switch.on::after { left: 23px; background: #e85d8a }
+  .toggle-body { display: none; padding: 16px; border-top: 1px solid #2a2a2a; background: #0d0d0d }
+  .toggle-body.open { display: block }
+
+  /* ── Image Upload Slots ─────────────────────────────── */
+  .img-slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px }
+  .img-slot {
+    border: 2px dashed #2a2a2a; border-radius: 10px; padding: 12px 8px;
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    cursor: pointer; transition: border-color .15s; position: relative; min-height: 120px;
+    justify-content: center; text-align: center;
+  }
+  .img-slot:hover { border-color: #e85d8a66 }
+  .img-slot.loaded { border-color: #4ade8066; border-style: solid }
+  .img-slot.uploading { border-color: #e85d8a44; animation: pulse-border 1s ease-in-out infinite }
+  @keyframes pulse-border { 0%, 100% { border-color: #e85d8a22 } 50% { border-color: #e85d8a88 } }
+  .img-slot input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100% }
+  .img-slot-preview { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 7px; display: none }
+  .img-slot.loaded .img-slot-preview { display: block }
+  .img-slot-icon { font-size: 1.6rem; color: #333 }
+  .img-slot.loaded .img-slot-icon { display: none }
+  .img-slot-name { font-size: 0.72rem; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.05em }
+  .img-slot.loaded .img-slot-name { color: #4ade80 }
+  .img-slot-status { font-size: 0.65rem; color: #555 }
+  .img-slot.loaded .img-slot-status { color: #4ade8088 }
+  .btn-remove-img {
+    position: absolute; top: 4px; right: 4px; width: 20px; height: 20px;
+    border-radius: 50%; background: #f8717188; border: none; color: #fff;
+    font-size: 0.7rem; cursor: pointer; display: none; align-items: center; justify-content: center;
+    flex: unset; padding: 0; z-index: 2;
+  }
+  .img-slot.loaded .btn-remove-img { display: flex }
+
+  /* ── Param Groups ───────────────────────────────────── */
+  .param-group { margin-bottom: 16px }
+  .param-group-title { font-size: 0.72rem; font-weight: 700; color: #e85d8a; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px }
+  .param-field { display: flex; flex-direction: column; gap: 4px }
+  .param-label { font-size: 0.7rem; color: #666; text-transform: uppercase; letter-spacing: 0.04em }
+  .param-select { background: #111; border: 1px solid #222; border-radius: 8px; color: #ccc; font-size: 0.82rem; padding: 7px 10px; width: 100% }
+  .param-select:focus { border-color: #e85d8a66 }
+  .param-select.selected { border-color: #e85d8a88; color: #fff }
 
   /* ── Progress Steps ─────────────────────────────────── */
   .steps {
-    background: #161616;
-    border: 1px solid #2a2a2a;
-    border-radius: 14px;
-    padding: 4px 20px;
-    margin-bottom: 24px;
+    background: #161616; border: 1px solid #2a2a2a;
+    border-radius: 14px; padding: 4px 20px; margin-bottom: 24px;
   }
-  .step {
-    display: flex;
-    align-items: flex-start;
-    gap: 14px;
-    padding: 14px 0;
-    border-bottom: 1px solid #1a1a1a;
-  }
+  .step { display: flex; align-items: flex-start; gap: 14px; padding: 14px 0; border-bottom: 1px solid #1a1a1a }
   .step:last-child { border-bottom: none }
   .step-dot {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    border: 2px solid #2a2a2a;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    font-size: 0.72rem;
-    font-weight: 700;
-    color: #444;
-    margin-top: 1px;
+    width: 28px; height: 28px; border-radius: 50%; border: 2px solid #2a2a2a;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    font-size: 0.72rem; font-weight: 700; color: #444; margin-top: 1px;
   }
-  .step.active .step-dot {
-    border-color: #e85d8a;
-    color: #e85d8a;
-    animation: pulse 1.2s ease-in-out infinite;
-  }
-  .step.done .step-dot { border-color: #4ade80; background: #4ade8020; color: #4ade80 }
+  .step.active .step-dot { border-color: #e85d8a; color: #e85d8a; animation: pulse 1.2s ease-in-out infinite }
+  .step.done .step-dot  { border-color: #4ade80; background: #4ade8020; color: #4ade80 }
   .step.error .step-dot { border-color: #f87171; background: #f8717120; color: #f87171 }
   @keyframes pulse { 0%, 100% { opacity: 1 } 50% { opacity: 0.4 } }
   .step-content { flex: 1; min-width: 0 }
   .step-title { font-size: 0.88rem; font-weight: 600; color: #555 }
   .step.active .step-title { color: #fff }
-  .step.done .step-title { color: #4ade80 }
+  .step.done .step-title  { color: #4ade80 }
   .step.error .step-title { color: #f87171 }
-  .step-detail {
-    font-size: 0.75rem;
-    color: #444;
-    margin-top: 4px;
-    line-height: 1.5;
-    word-break: break-word;
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-  }
+  .step-detail { font-size: 0.75rem; color: #444; margin-top: 4px; line-height: 1.5; word-break: break-word; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical }
   .step.active .step-detail { color: #666 }
-  .step.done .step-detail { color: #555 }
+  .step.done .step-detail  { color: #555 }
 
   /* ── Result Images ──────────────────────────────────── */
-  .result-images {
-    display: flex;
-    gap: 14px;
-    margin-bottom: 24px;
-  }
-  .result-img-wrap {
-    flex: 1;
-    background: #161616;
-    border: 1px solid #2a2a2a;
-    border-radius: 14px;
-    overflow: hidden;
-  }
-  .result-img-label {
-    font-size: 0.72rem;
-    font-weight: 700;
-    color: #555;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    padding: 10px 14px 6px;
-  }
-  .result-img-wrap img {
-    width: 100%;
-    display: block;
-    cursor: zoom-in;
-  }
-  .result-img-placeholder {
-    aspect-ratio: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #333;
-    font-size: 0.8rem;
-  }
+  .result-images { display: flex; gap: 14px; margin-bottom: 24px }
+  .result-img-wrap { flex: 1; background: #161616; border: 1px solid #2a2a2a; border-radius: 14px; overflow: hidden }
+  .result-img-label { font-size: 0.72rem; font-weight: 700; color: #555; text-transform: uppercase; letter-spacing: 0.06em; padding: 10px 14px 6px }
+  .result-img-wrap img { width: 100%; display: block; cursor: zoom-in }
+  .result-img-placeholder { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; color: #333; font-size: 0.8rem }
 
   /* ── Profile Card ───────────────────────────────────── */
-  .profile-card {
-    background: #161616;
-    border: 1px solid #2a2a2a;
-    border-radius: 18px;
-    overflow: hidden;
-    margin-top: 16px;
-  }
-  .profile-hero {
-    display: flex;
-    gap: 0;
-    background: #111;
-    min-height: 280px;
-  }
-  .profile-photos {
-    display: flex;
-    gap: 3px;
-    flex: 0 0 340px;
-  }
-  .profile-photos img {
-    width: 50%;
-    height: 280px;
-    object-fit: cover;
-    object-position: top;
-  }
-  .profile-hero-info {
-    flex: 1;
-    padding: 28px 24px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 8px;
-  }
-  .profile-name {
-    font-size: 1.8rem;
-    font-weight: 800;
-    color: #fff;
-    margin: 0;
-  }
+  .profile-card { background: #161616; border: 1px solid #2a2a2a; border-radius: 18px; overflow: hidden; margin-top: 16px }
+  .profile-hero { display: flex; gap: 0; background: #111; min-height: 280px }
+  .profile-photos { display: flex; gap: 3px; flex: 0 0 340px }
+  .profile-photos img { width: 50%; height: 280px; object-fit: cover; object-position: top }
+  .profile-hero-info { flex: 1; padding: 28px 24px; display: flex; flex-direction: column; justify-content: center; gap: 8px }
+  .profile-name { font-size: 1.8rem; font-weight: 800; color: #fff; margin: 0 }
   .profile-handle { font-size: 0.95rem; color: #e85d8a; font-weight: 600 }
   .profile-meta { font-size: 0.82rem; color: #666 }
-  .profile-niche {
-    display: inline-block;
-    background: #e85d8a22;
-    border: 1px solid #e85d8a44;
-    color: #e85d8a;
-    font-size: 0.72rem;
-    font-weight: 700;
-    padding: 3px 12px;
-    border-radius: 20px;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-top: 4px;
-    width: fit-content;
-  }
-  .profile-sections {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 1px;
-    background: #222;
-    border-top: 1px solid #222;
-  }
-  .profile-sections.collapsed { display: none }
+  .profile-niche { display: inline-block; background: #e85d8a22; border: 1px solid #e85d8a44; color: #e85d8a; font-size: 0.72rem; font-weight: 700; padding: 3px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 4px; width: fit-content }
+  .profile-sections { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1px; background: #222; border-top: 1px solid #222 }
   .profile-section { background: #161616; padding: 18px 20px }
-  .section-title {
-    font-size: 0.78rem;
-    font-weight: 700;
-    color: #e85d8a;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    margin: 0 0 12px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid #2a2a2a;
-  }
+  .section-title { font-size: 0.78rem; font-weight: 700; color: #e85d8a; text-transform: uppercase; letter-spacing: 0.06em; margin: 0 0 12px; padding-bottom: 8px; border-bottom: 1px solid #2a2a2a }
   .profile-field { display: flex; flex-direction: column; margin-bottom: 10px }
-  .field-label {
-    font-size: 0.68rem;
-    font-weight: 700;
-    color: #555;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    margin-bottom: 2px;
-  }
-  .field-value {
-    font-size: 0.85rem;
-    color: #ccc;
-    line-height: 1.5;
-    border-radius: 6px;
-    padding: 4px 6px;
-    min-height: 1.5em;
-    outline: none;
-    transition: background .15s, color .15s;
-    cursor: text;
-    word-break: break-word;
-  }
+  .field-label { font-size: 0.68rem; font-weight: 700; color: #555; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 2px }
+  .field-value { font-size: 0.85rem; color: #ccc; line-height: 1.5; border-radius: 6px; padding: 4px 6px; min-height: 1.5em; outline: none; transition: background .15s, color .15s; cursor: text; word-break: break-word }
   .field-value:hover { background: #1e1e1e }
   .field-value:focus { background: #1a1a1a; color: #fff; box-shadow: 0 0 0 1px #e85d8a44 }
   .field-value.sub { color: #aaa; padding-left: 12px }
   .edit-hint { font-size: 0.7rem; color: #444; text-align: right; padding: 8px 20px 4px }
-  .btn-expand {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    width: 100%;
-    padding: 12px 20px;
-    background: #1a1a1a;
-    border: none;
-    border-top: 1px solid #2a2a2a;
-    color: #888;
-    font-size: 0.82rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background .15s, color .15s;
-    flex: unset;
-    border-radius: 0;
-  }
-  .btn-expand:hover:not(:disabled) { background: #222; color: #ccc }
-  .btn-expand .arrow { transition: transform .25s; display: inline-block }
-  .btn-expand.open .arrow { transform: rotate(180deg) }
-  .btn-copy {
-    flex: unset;
-    padding: 9px 20px;
-    background: #2a2a2a;
-    font-size: 0.82rem;
-    margin-top: 12px;
-  }
+  .btn-copy { margin-top: 12px; flex: unset; padding: 9px 20px; background: #2a2a2a; font-size: 0.82rem }
   .btn-copy:hover:not(:disabled) { background: #3a3a3a }
+  .save-influencer-row { display: flex; gap: 10px; margin-top: 14px; align-items: center }
+  .btn-save-inf { flex: unset; padding: 9px 20px; background: #4ade8033; border: 1px solid #4ade8066; color: #4ade80; font-size: 0.82rem; border-radius: 10px }
+  .btn-save-inf:hover:not(:disabled) { background: #4ade8055 }
+
+  /* ── Influencers Panel ──────────────────────────────── */
+  .influencers-panel { background: #161616; border: 1px solid #2a2a2a; border-radius: 14px; padding: 20px; margin-bottom: 24px }
+  .influencers-panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px }
+  .influencers-panel-title { font-size: 0.95rem; font-weight: 700; color: #fff }
+  .btn-nueva { flex: unset; padding: 8px 16px; font-size: 0.8rem; background: transparent; border: 1px solid #e85d8a; color: #e85d8a; border-radius: 8px }
+  .btn-nueva:hover:not(:disabled) { background: #e85d8a22 }
+  .influencers-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px }
+  .influencer-card { background: #111; border: 1px solid #2a2a2a; border-radius: 12px; overflow: hidden; cursor: pointer; transition: border-color .15s, transform .1s }
+  .influencer-card:hover { border-color: #e85d8a88; transform: translateY(-2px) }
+  .influencer-card.active { border-color: #4ade80 }
+  .influencer-card-img { width: 100%; aspect-ratio: 1; object-fit: cover; object-position: top; display: block }
+  .influencer-card-img-placeholder { width: 100%; aspect-ratio: 1; background: #1a1a1a; display: flex; align-items: center; justify-content: center; color: #333; font-size: 2rem }
+  .influencer-card-info { padding: 10px 12px }
+  .influencer-card-name { font-size: 0.85rem; font-weight: 700; color: #fff; margin-bottom: 2px }
+  .influencer-card-nicho { font-size: 0.72rem; color: #888; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+  .influencer-card-weeks { font-size: 0.68rem; color: #555 }
+  .btn-seleccionar-inf { width: 100%; margin-top: 8px; padding: 6px; font-size: 0.75rem; background: #e85d8a; border-radius: 6px; flex: unset }
+  .btn-seleccionar-inf.active { background: #4ade80; color: #000 }
+
+  /* ── Fase 4 ─────────────────────────────────────────── */
+  .phase-header { display: flex; align-items: center; gap: 10px; margin: 36px 0 16px }
+  .phase-header h2 { font-size: 1.05rem; font-weight: 700; color: #fff }
+  .phase-badge { background: #e85d8a22; border: 1px solid #e85d8a44; color: #e85d8a; font-size: 0.7rem; font-weight: 700; padding: 2px 10px; border-radius: 20px; letter-spacing: 0.06em; text-transform: uppercase }
+  .persona-thumb { display: flex; flex-direction: column; align-items: center; gap: 4px }
+  .persona-thumb img { width: 72px; height: 72px; object-fit: cover; border-radius: 8px; border: 2px solid #4ade80 }
+  .persona-thumb .thumb-empty { width: 72px; height: 72px; border-radius: 8px; border: 2px dashed #333; display: flex; align-items: center; justify-content: center; color: #444; font-size: 0.7rem; text-align: center }
+  .persona-thumb span { font-size: 0.7rem; color: #666 }
+  .content-context-bar { display: flex; gap: 12px; background: #0d0d0d; border: 1px solid #2a2a2a; border-radius: 10px; padding: 10px 14px; margin-bottom: 14px; align-items: center }
+  .calendar-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 16px }
+  .day-card { background: #161616; border: 1px solid #2a2a2a; border-radius: 14px; overflow: hidden }
+  .day-card-header { background: #1a1a1a; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #2a2a2a }
+  .day-name { font-size: 0.85rem; font-weight: 800; color: #fff; text-transform: uppercase; letter-spacing: 0.06em }
+  .post-type-badge { background: #e85d8a22; border: 1px solid #e85d8a44; color: #e85d8a; font-size: 0.62rem; font-weight: 700; padding: 2px 8px; border-radius: 20px; text-transform: uppercase }
+  .day-card-body { padding: 12px 14px }
+  .day-scene, .day-caption { font-size: 0.78rem; color: #888; margin-bottom: 8px; line-height: 1.5; border-radius: 6px; padding: 6px 8px; background: #0d0d0d; outline: none; width: 100%; cursor: text; display: block }
+  .day-scene:focus, .day-caption:focus { background: #1a1a1a; color: #ddd; box-shadow: 0 0 0 1px #e85d8a44 }
+  .day-caption { color: #aaa; font-size: 0.8rem }
+  .variation-list { display: flex; flex-direction: column; gap: 8px }
+  .variation-item { border: 1px solid #1e1e1e; border-radius: 8px; overflow: hidden }
+  .variation-header { display: flex; align-items: center; gap: 8px; padding: 6px 10px; background: #111 }
+  .shot-type-tag { font-size: 0.62rem; font-weight: 700; color: #666; text-transform: uppercase; letter-spacing: 0.04em; background: #1e1e1e; padding: 2px 7px; border-radius: 20px }
+  .variation-prompt { font-size: 0.72rem; color: #666; padding: 7px 10px; line-height: 1.5; background: #0d0d0d; min-height: 52px; outline: none; cursor: text; width: 100%; display: block }
+  .variation-prompt:focus { background: #111; color: #bbb; box-shadow: inset 0 0 0 1px #e85d8a22 }
+  .variation-image-slot { position: relative; background: #111; border-top: 1px solid #1a1a1a; min-height: 70px; display: flex; align-items: center; justify-content: center }
+  .variation-image-slot img { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; cursor: pointer }
+  .slot-spinner { width: 18px; height: 18px; border: 2px solid #2a2a2a; border-top-color: #e85d8a; border-radius: 50%; animation: spin .8s linear infinite }
+  .slot-placeholder { font-size: 0.68rem; color: #333; text-align: center }
+  @keyframes spin { to { transform: rotate(360deg) } }
+  .btn-download { position: absolute; bottom: 5px; right: 5px; padding: 3px 9px; background: rgba(0,0,0,.75); border: 1px solid #444; border-radius: 5px; color: #ccc; font-size: 0.65rem; font-weight: 600; cursor: pointer; flex: unset; backdrop-filter: blur(4px); transition: background .15s }
+  .btn-download:hover { background: rgba(232,93,138,.8); border-color: #e85d8a; color: #fff }
+  .btn-generate-week { margin-top: 18px; width: 100%; padding: 13px; font-size: 0.95rem; background: linear-gradient(135deg, #e85d8a, #a855f7); border-radius: 12px; letter-spacing: 0.02em; flex: unset }
+  .btn-save-week { margin-top: 10px; flex: unset; padding: 9px 20px; background: #4ade8033; border: 1px solid #4ade8066; color: #4ade80; font-size: 0.82rem; border-radius: 10px; width: 100% }
+  .btn-save-week:hover:not(:disabled) { background: #4ade8055 }
   .deployment-id { font-size: 0.72rem; color: #333; margin-top: 28px; text-align: center }
-  .badge-v2 {
-    display: inline-block;
-    background: #e85d8a22;
-    border: 1px solid #e85d8a44;
-    color: #e85d8a;
-    font-size: 0.65rem;
-    font-weight: 700;
-    padding: 2px 8px;
-    border-radius: 20px;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    vertical-align: middle;
-    margin-left: 8px;
-  }
+
+  /* ── Supabase notice ─────────────────────────────────── */
+  .notice { font-size: 0.75rem; color: #666; background: #111; border: 1px solid #222; border-radius: 8px; padding: 8px 12px; margin-top: 10px; line-height: 1.5 }
 </style>
 </head>
 <body>
 <div class="container">
-  <h1>Zami AI Studio <span class="badge-v2">v2 Auto</span></h1>
-  <p class="subtitle">Escribe el nombre y el nicho — la IA genera todo automáticamente</p>
+  <h1>Zami AI Studio <span class="badge">v3 AION</span></h1>
+  <p class="subtitle">Nombre + nicho. Configura imágenes de referencia, parámetros detallados y/o prompt libre — o genera directo con AION.</p>
 
-  <!-- Form -->
-  <div class="controls">
-    <div class="two-col">
-      <div>
-        <label for="nombre">Nombre de la influencer</label>
-        <input type="text" id="nombre" placeholder="Ej: Valentina, Carla, Sofia...">
+  <!-- ── MIS INFLUENCERS ─────────────────────────────────────────────────────── -->
+  <div class="influencers-panel" id="influencers-panel">
+    <div class="influencers-panel-header">
+      <span class="influencers-panel-title">Mis Influencers</span>
+      <button class="btn-nueva" onclick="showNewInfluencerFlow()">+ Nueva Influencer</button>
+    </div>
+    <div class="influencers-grid" id="influencers-grid">
+      <div style="font-size:0.8rem;color:#444;grid-column:1/-1">Cargando...</div>
+    </div>
+  </div>
+
+  <!-- ── CREAR INFLUENCER ────────────────────────────────────────────────────── -->
+  <div id="create-section">
+    <div class="controls">
+
+      <!-- Nombre + Nicho -->
+      <div class="two-col">
+        <div>
+          <label for="nombre">Nombre de la influencer</label>
+          <input type="text" id="nombre" placeholder="Ej: Valentina, Carla, Sofia...">
+        </div>
+        <div>
+          <label for="nicho">Nicho de contenido</label>
+          <input type="text" id="nicho" placeholder="Ej: Fitness, Gamer, Moda, Lifestyle...">
+        </div>
       </div>
-      <div>
-        <label for="nicho">Nicho de contenido</label>
-        <input type="text" id="nicho" placeholder="Ej: Fitness, Gamer, Moda, Lifestyle...">
+
+      <!-- Photo Type — siempre visible -->
+      <div style="margin-top:12px">
+        <label for="photo-type">Tipo de foto</label>
+        <select id="photo-type">
+          <option value="-- Not selected / System inferred --">-- No seleccionado / Sistema infiere --</option>
+          <option value="Studio white background">Studio — fondo blanco</option>
+          <option value="Studio neutral grey background">Studio — fondo gris neutro</option>
+          <option value="Studio black background">Studio — fondo negro</option>
+          <option value="Natural light portrait">Retrato luz natural</option>
+          <option value="Studio 2x2 portrait multi-view grid">Studio 2×2 multi-view grid</option>
+          <option value="Studio character sheet 16:9 structured multi-view layout">Character sheet 16:9 multi-view</option>
+          <option value="Studio 16:9 three-panel portrait triptych">Tríptico 16:9 tres paneles</option>
+        </select>
+      </div>
+
+      <!-- Toggle A: Imágenes de referencia -->
+      <div class="toggle-section">
+        <div class="toggle-header" onclick="toggleSection('images')">
+          <button class="toggle-switch" id="switch-images" onclick="event.stopPropagation();toggleSection('images')"></button>
+          <span class="toggle-label">Imágenes de referencia</span>
+          <span class="toggle-hint" id="hint-images">0 imágenes subidas</span>
+        </div>
+        <div class="toggle-body" id="body-images">
+          <div class="img-slots" id="img-slots"></div>
+          <div class="notice">Las imágenes se suben a Supabase Storage y se pasan al workflow AION como referencia visual. Requiere <code>VITE_SUPABASE_URL</code> y <code>VITE_SUPABASE_ANON_KEY</code> en el .env y un bucket público llamado <code>zami-images</code>.</div>
+        </div>
+      </div>
+
+      <!-- Toggle B: Parámetros detallados -->
+      <div class="toggle-section">
+        <div class="toggle-header" onclick="toggleSection('params')">
+          <button class="toggle-switch" id="switch-params" onclick="event.stopPropagation();toggleSection('params')"></button>
+          <span class="toggle-label">Parámetros detallados</span>
+          <span class="toggle-hint" id="hint-params">43 parámetros — todos en auto</span>
+        </div>
+        <div class="toggle-body" id="body-params">
+          <div id="params-grid"></div>
+        </div>
+      </div>
+
+      <!-- Toggle C: Prompt libre -->
+      <div class="toggle-section">
+        <div class="toggle-header" onclick="toggleSection('prompt')">
+          <button class="toggle-switch" id="switch-prompt" onclick="event.stopPropagation();toggleSection('prompt')"></button>
+          <span class="toggle-label">Prompt libre</span>
+          <span class="toggle-hint">Texto adicional para AION</span>
+        </div>
+        <div class="toggle-body" id="body-prompt">
+          <textarea id="free-prompt" placeholder="Ej: mujer muy sexy con cabello negro, ojos azules, foxy eyes..." rows="3"></textarea>
+        </div>
+      </div>
+
+      <!-- Generate button -->
+      <div class="row" style="margin-top:16px">
+        <button id="btn-main" onclick="generateAll()">Generar Rostro AION</button>
+      </div>
+    </div>
+
+    <!-- Progress -->
+    <div id="progress-section" style="display:none">
+      <div class="steps">
+        <div class="step pending" id="step-1">
+          <div class="step-dot">1</div>
+          <div class="step-content">
+            <div class="step-title">Generando rostro con AION</div>
+            <div class="step-detail" id="step-1-detail"></div>
+          </div>
+        </div>
+        <div class="step pending" id="step-2">
+          <div class="step-dot">2</div>
+          <div class="step-content">
+            <div class="step-title">Generando prompt de cuerpo con IA</div>
+            <div class="step-detail" id="step-2-detail"></div>
+          </div>
+        </div>
+        <div class="step pending" id="step-3">
+          <div class="step-dot">3</div>
+          <div class="step-content">
+            <div class="step-title">Generando cuerpo con ComfyDeploy</div>
+            <div class="step-detail" id="step-3-detail"></div>
+          </div>
+        </div>
+        <div class="step pending" id="step-4">
+          <div class="step-dot">4</div>
+          <div class="step-content">
+            <div class="step-title">Generando perfil completo con Claude</div>
+            <div class="step-detail" id="step-4-detail"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div id="result-section" style="display:none">
+      <div class="result-images">
+        <div class="result-img-wrap">
+          <div class="result-img-label">Rostro</div>
+          <div id="result-face-placeholder" class="result-img-placeholder">Esperando...</div>
+          <img id="result-face-img" src="" alt="Rostro" style="display:none" onclick="window.open(this.src,'_blank')">
+        </div>
+        <div class="result-img-wrap">
+          <div class="result-img-label">Cuerpo</div>
+          <div id="result-body-placeholder" class="result-img-placeholder" style="aspect-ratio:.6">Esperando...</div>
+          <img id="result-body-img" src="" alt="Cuerpo" style="display:none" onclick="window.open(this.src,'_blank')">
+        </div>
+      </div>
+
+      <div id="persona-output"></div>
+
+      <div class="row" style="margin-top:12px;display:none" id="copy-wrap">
+        <button class="btn-copy" onclick="copyPersona()">Copiar perfil</button>
+      </div>
+      <div class="save-influencer-row" id="save-influencer-row" style="display:none">
+        <button class="btn-save-inf" id="btn-save-influencer" onclick="saveCurrentInfluencer()">
+          Guardar Influencer
+        </button>
+        <span id="save-influencer-status" style="font-size:0.78rem;color:#666"></span>
+      </div>
+    </div>
+  </div><!-- end create-section -->
+
+  <!-- ── FASE 4 ──────────────────────────────────────────────────────────────── -->
+  <div class="phase-header">
+    <span class="phase-badge">Fase 4</span>
+    <h2>Generación de Contenido Semanal UGC</h2>
+  </div>
+
+  <div class="controls">
+    <div class="content-context-bar">
+      <div class="persona-thumb">
+        <div class="thumb-empty" id="p4-face-empty">Sin<br>rostro</div>
+        <img id="p4-face-img" src="" alt="" style="display:none">
+        <span>Rostro</span>
+      </div>
+      <div class="persona-thumb">
+        <div class="thumb-empty" id="p4-body-empty">Sin<br>cuerpo</div>
+        <img id="p4-body-img" src="" alt="" style="display:none">
+        <span>Cuerpo</span>
+      </div>
+      <div style="flex:1;margin-left:4px">
+        <strong id="p4-influencer-label" style="display:block;font-size:0.85rem;color:#888;margin-bottom:2px">Sin influencer seleccionada</strong>
+        <span style="font-size:0.75rem;color:#555">Genera el perfil completo o selecciona una influencer guardada.</span>
       </div>
     </div>
     <div class="row" style="margin-top:0">
-      <button id="btn-main" onclick="generateAll()">▶ Generar influencer completa</button>
+      <button id="btn-generate-plan" onclick="generateContentPlan()" disabled>Generar Plan Semanal</button>
     </div>
   </div>
 
-  <!-- Progress -->
-  <div id="progress-section" style="display:none">
-    <div class="steps">
-      <div class="step pending" id="step-1">
-        <div class="step-dot">1</div>
-        <div class="step-content">
-          <div class="step-title">Generando prompt de rostro con IA</div>
-          <div class="step-detail" id="step-1-detail"></div>
-        </div>
-      </div>
-      <div class="step pending" id="step-2">
-        <div class="step-dot">2</div>
-        <div class="step-content">
-          <div class="step-title">Generando rostro con ComfyDeploy</div>
-          <div class="step-detail" id="step-2-detail"></div>
-        </div>
-      </div>
-      <div class="step pending" id="step-3">
-        <div class="step-dot">3</div>
-        <div class="step-content">
-          <div class="step-title">Generando prompt de cuerpo con IA</div>
-          <div class="step-detail" id="step-3-detail"></div>
-        </div>
-      </div>
-      <div class="step pending" id="step-4">
-        <div class="step-dot">4</div>
-        <div class="step-content">
-          <div class="step-title">Generando cuerpo con ComfyDeploy</div>
-          <div class="step-detail" id="step-4-detail"></div>
-        </div>
-      </div>
-      <div class="step pending" id="step-5">
-        <div class="step-dot">5</div>
-        <div class="step-content">
-          <div class="step-title">Generando perfil completo con Claude</div>
-          <div class="step-detail" id="step-5-detail"></div>
-        </div>
-      </div>
-    </div>
-  </div>
+  <div class="status-bar" id="content-plan-status">Completa el pipeline o selecciona una influencer guardada.</div>
 
-  <!-- Results -->
-  <div id="result-section" style="display:none">
-    <div class="result-images">
-      <div class="result-img-wrap">
-        <div class="result-img-label">Rostro</div>
-        <div id="result-face-placeholder" class="result-img-placeholder" style="aspect-ratio:1">Esperando...</div>
-        <img id="result-face-img" src="" alt="Rostro" style="display:none" onclick="window.open(this.src,'_blank')">
-      </div>
-      <div class="result-img-wrap">
-        <div class="result-img-label">Cuerpo</div>
-        <div id="result-body-placeholder" class="result-img-placeholder" style="aspect-ratio:.6">Esperando...</div>
-        <img id="result-body-img" src="" alt="Cuerpo" style="display:none" onclick="window.open(this.src,'_blank')">
-      </div>
-    </div>
-
-    <div id="persona-output"></div>
-    <div class="row" style="margin-top:12px" id="copy-wrap" style="display:none">
-      <button class="btn-copy" onclick="copyPersona()">Copiar perfil</button>
-    </div>
+  <div id="content-calendar-wrap" style="display:none">
+    <div class="calendar-grid" id="content-calendar"></div>
+    <button class="btn-generate-week" id="btn-generate-week" onclick="generateWeekImages()" style="display:none">
+      Generar Semana Completa — 20 Imágenes (5 días × 4 variaciones)
+    </button>
+    <button class="btn-save-week" id="btn-save-week" onclick="saveWeek()" style="display:none">
+      Guardar semana en historial
+    </button>
   </div>
 
   <div class="deployment-id">
-    fase 1: d3e4cb7d &nbsp;|&nbsp; fase 2: cabf22a3 &nbsp;|&nbsp; cerebro: claude-sonnet-4-6
+    AION: c6e6b7f0 &nbsp;|&nbsp; cuerpo: cabf22a3 &nbsp;|&nbsp; perfil: claude-sonnet-4-6 &nbsp;|&nbsp; fase 4: 8d4702cb
   </div>
 </div>
 
 <script>
 const POLL_INTERVAL = 8000
 
-let generatedFaceUrl   = null
-let generatedBodyUrl   = null
-let generatedFacePrompt = null
+// ── AION params definition ────────────────────────────────────────────────────
+const AION_PARAMS = [
+  { name:'sex',        label:'Sex',        group:'Demographics', options:['auto','unspecified','female','male','androgynous'] },
+  { name:'ethnicity',  label:'Ethnicity',  group:'Demographics', options:['auto','unspecified','East Asian','South Asian','Southeast Asian','Central Asian','Middle Eastern','North African','Horn of Africa','Sub-Saharan African','Northern European','Southern European','Eastern European','Western European','North American','Latin American','Mestizo','Caribbean','Indigenous American','Pacific Islander','Melanesian','Australian Aboriginal','Mixed heritage'] },
+  { name:'eye_shape',  label:'Eye Shape',  group:'Eyes', options:['auto','almond-shaped','round','hooded','monolid','upturned','downturned','deep-set','prominent','wide-set','close-set'] },
+  { name:'eye_size',   label:'Eye Size',   group:'Eyes', options:['auto','small','medium','large','very large','proportionate'] },
+  { name:'eye_tilt',   label:'Eye Tilt',   group:'Eyes', options:['auto','neutral tilt','slight upward tilt','moderate upward tilt','slight downward tilt','horizontal'] },
+  { name:'eye_color',  label:'Eye Color',  group:'Eyes', options:['auto','dark brown','medium brown','light brown','hazel','amber','green','blue-green','light blue','deep blue','gray','dark gray','black'] },
+  { name:'eyebrow_thickness', label:'Eyebrow Thickness', group:'Eyebrows', options:['auto','thin','medium thickness','thick','very thick','sparse','dense and full'] },
+  { name:'eyebrow_shape',    label:'Eyebrow Shape',    group:'Eyebrows', options:['auto','straight','soft arch','high arch','rounded','angled','flat','S-shaped','naturally unruly'] },
+  { name:'eyebrow_color',    label:'Eyebrow Color',    group:'Eyebrows', options:['auto','black','dark brown','medium brown','light brown','auburn','dark blonde','blonde','gray','reddish brown'] },
+  { name:'nose_profile', label:'Nose Profile', group:'Nose', options:['auto','straight profile','slightly concave','slightly convex','aquiline','button nose profile','flat bridge','high bridge','broad bridge','narrow bridge'] },
+  { name:'nose_base',   label:'Nose Base',   group:'Nose', options:['auto','narrow base','medium base','wide base','flared nostrils','compact nostrils','rounded base','angular base'] },
+  { name:'nose_tip',    label:'Nose Tip',    group:'Nose', options:['auto','rounded tip','pointed tip','bulbous tip','upturned tip','downturned tip','refined tip','broad tip','narrow tip'] },
+  { name:'lips_volume',     label:'Lips Volume',     group:'Lips', options:['auto','thin lips','medium volume','full lips','very full lips','naturally plump','delicate and refined'] },
+  { name:'cupid_bow',       label:"Cupid's Bow",      group:'Lips', options:["auto","pronounced cupid's bow","subtle cupid's bow","flat cupid's bow","heart-shaped cupid's bow","rounded cupid's bow","sharply defined bow"] },
+  { name:'lips_proportion', label:'Lips Proportion', group:'Lips', options:['auto','balanced upper and lower','fuller lower lip','fuller upper lip','equal proportion','slightly fuller lower','slightly fuller upper'] },
+  { name:'lips_color',      label:'Lip Color',       group:'Lips', options:['auto','soft pink','rosy pink','mauve','dusty rose','berry toned','warm peach','neutral beige','deep rose','brownish pink','coral toned'] },
+  { name:'forehead',    label:'Forehead',    group:'Structure', options:['auto','broad forehead','narrow forehead','high forehead','low forehead','slightly rounded','flat forehead','prominent forehead','average proportion'] },
+  { name:'cheekbones',  label:'Cheekbones',  group:'Structure', options:['auto','high cheekbones','low cheekbones','prominent cheekbones','subtle cheekbones','wide-set cheekbones','angular cheekbones','soft rounded cheekbones','flat cheekbones'] },
+  { name:'jawline',     label:'Jawline',     group:'Structure', options:['auto','strong jawline','soft jawline','angular jawline','rounded jawline','square jawline','tapered jawline','wide jaw','narrow jaw','defined jawline'] },
+  { name:'chin',        label:'Chin',        group:'Structure', options:['auto','pointed chin','rounded chin','square chin','narrow chin','broad chin','prominent chin','receding chin','cleft chin','soft chin'] },
+  { name:'cheeks',      label:'Cheeks',      group:'Volumes', options:['auto','full cheeks','hollow cheeks','soft rounded cheeks','flat cheeks','naturally plump','slightly sunken','apple cheeks','lean cheeks'] },
+  { name:'submental',           label:'Submental',           group:'Volumes', options:['auto','tight submental area','soft submental area','defined under-chin','slight fullness','clean jawline transition','natural softness'] },
+  { name:'face_neck_transition',label:'Face-Neck Transition',group:'Volumes', options:['auto','smooth transition','defined angle','soft gradual transition','sharp jaw-neck angle','naturally blended','elongated neck line'] },
+  { name:'hair_structure', label:'Hair Structure', group:'Hair', options:['auto','straight','wavy','curly','coily','kinky','loosely wavy','tightly curled','fine and silky','coarse and thick'] },
+  { name:'hair_length',   label:'Hair Length',   group:'Hair', options:['auto','buzz cut','very short','short','ear length','chin length','shoulder length','mid-back length','long','very long','bald','shaved sides'] },
+  { name:'hair_volume',   label:'Hair Volume',   group:'Hair', options:['auto','flat and sleek','low volume','medium volume','high volume','very voluminous','thick and dense','thin and fine','fluffy'] },
+  { name:'hair_color',    label:'Hair Color',    group:'Hair', options:['auto','jet black','dark brown','medium brown','light brown','dark blonde','golden blonde','platinum blonde','strawberry blonde','auburn','copper red','deep red','silver gray','white','salt and pepper'] },
+  { name:'skin_tone',          label:'Skin Tone',       group:'Skin', options:['auto','very fair','fair','light','light-medium','medium','medium-tan','tan','olive','deep tan','brown','dark brown','deep brown','ebony'] },
+  { name:'skin_undertone',     label:'Skin Undertone',  group:'Skin', options:['auto','cool undertone','warm undertone','neutral undertone','olive undertone','pink undertone','golden undertone','peach undertone','red undertone'] },
+  { name:'skin_texture',       label:'Skin Texture',    group:'Skin', options:['auto','smooth natural grain','fine skin texture','slightly rough texture','soft velvety texture','natural skin grain','matte natural texture'] },
+  { name:'skin_micro_texture', label:'Micro-Texture',   group:'Skin', options:['auto','visible fine pores','subtle pore detail','barely visible pores','natural pore variation','light textural detail','realistic micro detail'] },
+  { name:'skin_imperfections', label:'Imperfections',   group:'Skin', options:['auto','none visible','light freckles','subtle blemishes','faint redness zones','small moles','soft under-eye shadows','light freckles and moles','minor sun spots','natural skin variation'] },
+  { name:'skin_reflection',    label:'Skin Reflection', group:'Skin', options:['auto','matte natural finish','soft skin sheen','subtle light diffusion','natural dewy glow','satin finish','minimal shine'] },
+  { name:'wrinkles',     label:'Wrinkles',    group:'Defects', options:["auto","none","fine forehead lines","crow's feet","nasolabial folds","frown lines","neck wrinkles","deep forehead furrows","perioral wrinkles","under-eye wrinkles","bunny lines","marionette lines","horizontal neck bands"] },
+  { name:'scars',        label:'Scars',       group:'Defects', options:['auto','none','small facial scar','acne scarring','surgical scar','burn scar','cleft lip scar','eyebrow scar','cheek scar','forehead scar','ice-pick acne scars','boxcar acne scars','rolling acne scars','keloid scar'] },
+  { name:'deformations', label:'Deformations',group:'Defects', options:["auto","none","asymmetric features","deviated nose","drooping eyelid","facial paralysis trace","cleft palate trace","micrognathia","prognathism","hemifacial microsomia","facial asymmetry left side","facial asymmetry right side","bell's palsy trace"] },
+  { name:'tone_loss',    label:'Tone Loss',   group:'Defects', options:['auto','none','mild jowling','sagging cheeks','loose neck skin','drooping brow','hollow temples','sunken cheeks','loose eyelid skin','loss of jawline definition','nasolabial fold deepening','thinning lips from aging','overall facial volume loss'] },
+  { name:'skin_marks',   label:'Skin Marks',  group:'Defects', options:['auto','none','post-acne dark spots','post-acne red marks','hyperpigmentation patches','melasma','age spots','sun damage spots','cherry angiomas','seborrheic keratosis','port wine stain','cafe au lait spots','liver spots'] },
+  { name:'vitiligo',     label:'Vitiligo',    group:'Defects', options:['auto','none','perioral vitiligo','periocular vitiligo','forehead vitiligo','hands vitiligo','scattered patches','segmental vitiligo','universal vitiligo','focal vitiligo on cheek','symmetrical facial vitiligo','vitiligo on nose bridge'] },
+  { name:'under_eye',    label:'Under-Eye',   group:'Defects', options:['auto','none','mild dark circles','deep dark circles','puffy under-eye bags','hollow tear troughs','blue-tinted dark circles','brown-tinted dark circles','hereditary dark circles','malar bags','festoons','crepey under-eye skin'] },
+  { name:'expression',         label:'Expression',         group:'Expression', options:['auto','neutral','happiness','sadness','anger','surprise','fear','disgust','contempt'] },
+  { name:'expression_variant', label:'Expression Variant', group:'Expression', options:['auto','Duchenne smile','social smile','bitter smile','coy smile','broad grin','closed-lip smile','smirk','radiant joy','gentle warmth','laughing','tearful','melancholic gaze','lip tremble','downcast eyes','subtle grief','resigned sadness','nostalgic sadness','holding back tears','cold fury','simmering rage','tight jaw anger','flared nostrils anger','stern disapproval','controlled anger','frustrated scowl','indignant look','wide-eyed shock','mild surprise','open-mouth gasp','raised brows surprise','stunned disbelief','pleasant surprise','startled','wide-eyed fear','frozen terror','anxious worry','nervous tension','subtle unease','panicked expression','deer-in-headlights','mild distaste','strong revulsion','nose wrinkle disgust','lip curl disgust','nauseated look','subtle aversion','one-sided smirk','dismissive look','superior gaze','subtle disdain','eye-roll contempt','sardonic expression','serene neutral','pensive','stoic','blank stare','composed calm','thoughtful gaze','distant look','wistful','determined'] },
+]
 
-function setStep(n, state, detail) {
-  const el = document.getElementById(`step-${n}`)
-  el.className = `step ${state}`
-  const dot = el.querySelector('.step-dot')
-  if (state === 'done')  dot.textContent = '✓'
-  else if (state === 'error') dot.textContent = '✕'
-  else dot.textContent = n
-  if (detail !== undefined) {
-    document.getElementById(`step-${n}-detail`).textContent = detail
+const IMAGE_SLOTS = [
+  { id:'ojos',           label:'Ojos' },
+  { id:'cejas',          label:'Cejas' },
+  { id:'nariz',          label:'Nariz' },
+  { id:'labios',         label:'Labios' },
+  { id:'frente',         label:'Frente' },
+  { id:'pomulos',        label:'Pómulos' },
+  { id:'piel',           label:'Piel' },
+  { id:'menton',         label:'Mentón' },
+  { id:'cabello',        label:'Cabello' },
+  { id:'rostro completo',label:'Rostro Completo' },
+]
+
+// ── Global state ─────────────────────────────────────────────────────────────
+let selectedInfluencer    = null
+let generatedFaceUrl      = null
+let generatedBodyUrl      = null
+let generatedPersonaText  = null
+let currentContentPlan    = null
+
+// Toggle state
+const sectionState = { images: false, params: false, prompt: false }
+
+// Image URLs (filled by upload)
+const uploadedImages = {}
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  buildImageSlots()
+  buildParamsGrid()
+  loadInfluencers()
+})
+
+// ── Build UI components ───────────────────────────────────────────────────────
+function buildImageSlots() {
+  const container = document.getElementById('img-slots')
+  container.innerHTML = ''
+  for (const slot of IMAGE_SLOTS) {
+    const div = document.createElement('div')
+    div.className = 'img-slot'
+    div.id = `slot-${slot.id.replace(' ', '-')}`
+    div.innerHTML = `
+      <button class="btn-remove-img" onclick="removeImage('${slot.id}', event)" title="Quitar">×</button>
+      <img class="img-slot-preview" id="preview-${slot.id.replace(' ', '-')}" src="" alt="">
+      <div class="img-slot-icon">+</div>
+      <div class="img-slot-name">${slot.label}</div>
+      <div class="img-slot-status" id="status-${slot.id.replace(' ', '-')}">Arrastra o haz clic</div>
+      <input type="file" accept="image/*" onchange="handleImageFile('${slot.id}', this)" title="${slot.label}">
+    `
+    container.appendChild(div)
   }
 }
 
+function buildParamsGrid() {
+  const container = document.getElementById('params-grid')
+  container.innerHTML = ''
+
+  const groups = {}
+  for (const p of AION_PARAMS) {
+    if (!groups[p.group]) groups[p.group] = []
+    groups[p.group].push(p)
+  }
+
+  for (const [groupName, params] of Object.entries(groups)) {
+    const groupDiv = document.createElement('div')
+    groupDiv.className = 'param-group'
+    groupDiv.innerHTML = `<div class="param-group-title">${groupName}</div>`
+
+    const grid = document.createElement('div')
+    grid.className = params.length <= 2 ? 'two-col' : (params.length <= 3 ? 'three-col' : 'four-col')
+    grid.style.gap = '8px'
+    grid.style.marginBottom = '8px'
+
+    for (const p of params) {
+      const field = document.createElement('div')
+      field.className = 'param-field'
+      const opts = p.options.map(o => `<option value="${escHtml(o)}">${escHtml(o)}</option>`).join('')
+      field.innerHTML = `
+        <span class="param-label">${p.label}</span>
+        <select class="param-select" id="param-${p.name}" onchange="onParamChange(this)">
+          ${opts}
+        </select>
+      `
+      grid.appendChild(field)
+    }
+
+    groupDiv.appendChild(grid)
+    container.appendChild(groupDiv)
+  }
+}
+
+// ── Toggle sections ───────────────────────────────────────────────────────────
+function toggleSection(id) {
+  sectionState[id] = !sectionState[id]
+  const sw   = document.getElementById(`switch-${id}`)
+  const body = document.getElementById(`body-${id}`)
+  sw.classList.toggle('on', sectionState[id])
+  body.classList.toggle('open', sectionState[id])
+}
+
+function onParamChange(sel) {
+  sel.classList.toggle('selected', sel.value !== 'auto')
+  updateParamHint()
+}
+
+function updateParamHint() {
+  const count = AION_PARAMS.filter(p => {
+    const el = document.getElementById(`param-${p.name}`)
+    return el && el.value !== 'auto'
+  }).length
+  document.getElementById('hint-params').textContent =
+    count > 0 ? `${count} parámetro(s) seleccionado(s)` : '43 parámetros — todos en auto'
+}
+
+function updateImageHint() {
+  const count = Object.keys(uploadedImages).filter(k => uploadedImages[k]).length
+  document.getElementById('hint-images').textContent =
+    count > 0 ? `${count} imagen(es) subida(s)` : '0 imágenes subidas'
+}
+
+// ── Image upload ──────────────────────────────────────────────────────────────
+async function handleImageFile(slotId, input) {
+  const file = input.files[0]
+  if (!file) return
+
+  const slotEl   = document.getElementById(`slot-${slotId.replace(' ', '-')}`)
+  const statusEl = document.getElementById(`status-${slotId.replace(' ', '-')}`)
+  const previewEl = document.getElementById(`preview-${slotId.replace(' ', '-')}`)
+
+  slotEl.classList.remove('loaded')
+  slotEl.classList.add('uploading')
+  statusEl.textContent = 'Subiendo...'
+
+  try {
+    const base64 = await fileToBase64(file)
+    const res    = await fetch('/api/upload-image', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: slotId, data: base64, type: file.type }),
+    })
+    const data = await res.json()
+    if (!res.ok || data.error) throw new Error(data.error || `HTTP ${res.status}`)
+
+    uploadedImages[slotId] = data.url
+    previewEl.src = data.url
+    slotEl.classList.remove('uploading')
+    slotEl.classList.add('loaded')
+    statusEl.textContent = 'Subida'
+    updateImageHint()
+  } catch (err) {
+    slotEl.classList.remove('uploading')
+    statusEl.textContent = `Error: ${err.message}`
+    console.error('Upload error:', err)
+  }
+}
+
+function removeImage(slotId, event) {
+  event.stopPropagation()
+  const slotEl    = document.getElementById(`slot-${slotId.replace(' ', '-')}`)
+  const statusEl  = document.getElementById(`status-${slotId.replace(' ', '-')}`)
+  const previewEl = document.getElementById(`preview-${slotId.replace(' ', '-')}`)
+  delete uploadedImages[slotId]
+  previewEl.src = ''
+  slotEl.classList.remove('loaded')
+  statusEl.textContent = 'Arrastra o haz clic'
+  updateImageHint()
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload  = () => resolve(reader.result.split(',')[1])
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
+}
+
+// ── Collect AION inputs ───────────────────────────────────────────────────────
+function getAionInputs() {
+  const inputs = {
+    photo_type: document.getElementById('photo-type').value,
+    images:     {},
+    params:     {},
+    prompt:     '',
+  }
+
+  if (sectionState.images) {
+    for (const slot of IMAGE_SLOTS) {
+      if (uploadedImages[slot.id]) inputs.images[slot.id] = uploadedImages[slot.id]
+    }
+  }
+
+  if (sectionState.params) {
+    for (const p of AION_PARAMS) {
+      const el = document.getElementById(`param-${p.name}`)
+      if (el) inputs.params[p.name] = el.value
+    }
+  }
+
+  if (sectionState.prompt) {
+    inputs.prompt = (document.getElementById('free-prompt').value || '').trim()
+  }
+
+  return inputs
+}
+
+function buildFaceDescription(inputs) {
+  const parts = []
+  if (inputs.prompt) parts.push(inputs.prompt)
+  if (sectionState.params && inputs.params) {
+    const keyParams = ['sex','ethnicity','skin_tone','hair_color','eye_color','hair_length','hair_structure']
+    for (const k of keyParams) {
+      if (inputs.params[k] && inputs.params[k] !== 'auto') parts.push(`${k}: ${inputs.params[k]}`)
+    }
+  }
+  return parts.join(', ')
+}
+
+// ── Influencers persistence ───────────────────────────────────────────────────
+async function loadInfluencers() {
+  try {
+    const res  = await fetch('/api/influencers')
+    const data = await res.json()
+    const list = data.influencers || []
+    localStorage.setItem('zami_influencers', JSON.stringify(list))
+    renderInfluencersPanel(list)
+  } catch {
+    const cached = localStorage.getItem('zami_influencers')
+    renderInfluencersPanel(cached ? JSON.parse(cached) : [])
+  }
+}
+
+function renderInfluencersPanel(list) {
+  const grid = document.getElementById('influencers-grid')
+  if (!list.length) {
+    grid.innerHTML = '<div style="font-size:0.8rem;color:#444;grid-column:1/-1">Aún no hay influencers guardadas. Crea tu primera influencer arriba.</div>'
+    return
+  }
+  grid.innerHTML = ''
+  for (const inf of list) {
+    const el = document.createElement('div')
+    el.className = 'influencer-card' + (selectedInfluencer?.id === inf.id ? ' active' : '')
+    el.innerHTML = `
+      <img class="influencer-card-img" src="${escHtml(inf.face_url)}" alt="${escHtml(inf.nombre)}"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+      <div class="influencer-card-img-placeholder" style="display:none">👤</div>
+      <div class="influencer-card-info">
+        <div class="influencer-card-name">${escHtml(inf.nombre)}</div>
+        <div class="influencer-card-nicho">${escHtml(inf.nicho)}</div>
+        <div class="influencer-card-weeks">${inf.weeks?.length || 0} semana(s)</div>
+        <button class="btn-seleccionar-inf ${selectedInfluencer?.id === inf.id ? 'active' : ''}"
+                data-inf="${escAttr(JSON.stringify(inf))}"
+                onclick="selectInfluencer(this)">
+          ${selectedInfluencer?.id === inf.id ? 'Activa' : 'Seleccionar'}
+        </button>
+      </div>
+    `
+    grid.appendChild(el)
+  }
+}
+
+function selectInfluencer(btn) {
+  const inf = JSON.parse(btn.dataset.inf)
+  selectedInfluencer    = inf
+  generatedFaceUrl      = inf.face_url
+  generatedBodyUrl      = inf.body_url
+  generatedPersonaText  = inf.persona
+
+  document.getElementById('create-section').style.display = 'none'
+  syncPhase4Thumbs()
+  document.getElementById('p4-influencer-label').textContent = `${inf.nombre} · ${inf.nicho} · ${inf.weeks?.length || 0} semanas generadas`
+  document.getElementById('btn-generate-plan').disabled = false
+  setContentPlanStatus('Influencer cargada. Clic en "Generar Plan Semanal" para comenzar.')
+  renderInfluencersPanel(JSON.parse(localStorage.getItem('zami_influencers') || '[]'))
+  document.getElementById('content-plan-status').scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
+function showNewInfluencerFlow() {
+  selectedInfluencer    = null
+  generatedFaceUrl      = null
+  generatedBodyUrl      = null
+  generatedPersonaText  = null
+  currentContentPlan    = null
+
+  document.getElementById('create-section').style.display = 'block'
+  document.getElementById('progress-section').style.display = 'none'
+  document.getElementById('result-section').style.display = 'none'
+  document.getElementById('btn-main').disabled = false
+
+  for (let i = 1; i <= 4; i++) setStep(i, 'pending', '')
+
+  document.getElementById('persona-output').innerHTML = ''
+  document.getElementById('save-influencer-row').style.display = 'none'
+  document.getElementById('copy-wrap').style.display = 'none'
+  document.getElementById('btn-generate-plan').disabled = true
+  document.getElementById('content-calendar-wrap').style.display = 'none'
+  setContentPlanStatus('Completa el pipeline o selecciona una influencer guardada.')
+
+  document.getElementById('p4-face-empty').style.display = 'flex'
+  document.getElementById('p4-face-img').style.display = 'none'
+  document.getElementById('p4-body-empty').style.display = 'flex'
+  document.getElementById('p4-body-img').style.display = 'none'
+  document.getElementById('p4-influencer-label').textContent = 'Sin influencer seleccionada'
+
+  renderInfluencersPanel(JSON.parse(localStorage.getItem('zami_influencers') || '[]'))
+  document.getElementById('create-section').scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
+// ── Main pipeline ─────────────────────────────────────────────────────────────
 async function generateAll() {
   const nombre = document.getElementById('nombre').value.trim()
   const nicho  = document.getElementById('nicho').value.trim()
@@ -409,15 +796,12 @@ async function generateAll() {
   if (!nicho)  { alert('Escribe el nicho de contenido.'); return }
 
   btn.disabled = true
-  generatedFaceUrl    = null
-  generatedBodyUrl    = null
-  generatedFacePrompt = null
+  generatedFaceUrl   = null
+  generatedBodyUrl   = null
+  generatedPersonaText = null
 
-  // Reset progress
-  for (let i = 1; i <= 5; i++) setStep(i, 'pending', '')
+  for (let i = 1; i <= 4; i++) setStep(i, 'pending', '')
   document.getElementById('progress-section').style.display = 'block'
-
-  // Reset results
   document.getElementById('result-section').style.display = 'none'
   document.getElementById('result-face-img').style.display = 'none'
   document.getElementById('result-face-placeholder').style.display = 'flex'
@@ -425,68 +809,73 @@ async function generateAll() {
   document.getElementById('result-body-placeholder').style.display = 'flex'
   document.getElementById('persona-output').innerHTML = ''
   document.getElementById('copy-wrap').style.display = 'none'
+  document.getElementById('save-influencer-row').style.display = 'none'
+
+  const aionInputs = getAionInputs()
 
   try {
-    // ── Paso 1: Prompt de rostro ──────────────────────────
-    setStep(1, 'active', 'Claude generando prompt hiperdescriptivo...')
-    const r1   = await apiFetch('/api/generate-prompt', { nombre, nicho, tipo: 'face' })
-    generatedFacePrompt = r1.prompt
-    setStep(1, 'done', generatedFacePrompt)
+    // ── Paso 1: Rostro AION ───────────────────────────────
+    const modeHint = [
+      sectionState.images && Object.keys(aionInputs.images).length > 0 ? 'imágenes' : null,
+      sectionState.params ? 'params' : null,
+      sectionState.prompt && aionInputs.prompt ? 'prompt' : null,
+    ].filter(Boolean).join(' + ') || 'auto'
+    setStep(1, 'active', `Enviando a AION (modo: ${modeHint})...`)
 
-    // ── Paso 2: Rostro con ComfyDeploy ───────────────────
-    setStep(2, 'active', 'Enviando a ComfyDeploy...')
-    const r2      = await apiFetch('/api/generate', { prompt: generatedFacePrompt, count: 1 })
-    const faceRunId = r2.runIds[0]
-    setStep(2, 'active', `En cola (run: ${faceRunId.slice(0,8)}...) — puede tardar 1–5 min`)
-    generatedFaceUrl = await pollForImage(faceRunId, 2)
+    const r1     = await apiFetch('/api/generate-face', aionInputs)
+    const faceRunId = r1.runIds[0]
+    setStep(1, 'active', `En cola (run: ${faceRunId.slice(0, 8)}...) — puede tardar 1–5 min`)
+    generatedFaceUrl = await pollForImage(faceRunId, 1)
 
     document.getElementById('result-section').style.display = 'block'
     document.getElementById('result-face-placeholder').style.display = 'none'
     const faceImg = document.getElementById('result-face-img')
-    faceImg.src = generatedFaceUrl
-    faceImg.style.display = 'block'
-    setStep(2, 'done', 'Rostro generado')
+    faceImg.src = generatedFaceUrl; faceImg.style.display = 'block'
+    setStep(1, 'done', 'Rostro generado')
 
-    // ── Paso 3: Prompt de cuerpo ──────────────────────────
-    setStep(3, 'active', 'Claude generando prompt de cuerpo...')
-    const r3 = await apiFetch('/api/generate-prompt', {
-      nombre, nicho, tipo: 'body', face_description: generatedFacePrompt,
-    })
-    const bodyPrompt = r3.prompt
-    setStep(3, 'done', bodyPrompt)
+    // ── Paso 2: Prompt de cuerpo ──────────────────────────
+    setStep(2, 'active', 'Claude generando prompt de cuerpo...')
+    const faceDescription = buildFaceDescription(aionInputs)
+    const r2 = await apiFetch('/api/generate-body-prompt', { nombre, nicho, face_description: faceDescription })
+    const bodyPrompt = r2.prompt
+    setStep(2, 'done', bodyPrompt)
 
-    // ── Paso 4: Cuerpo con ComfyDeploy ───────────────────
-    setStep(4, 'active', 'Enviando a ComfyDeploy...')
-    const r4      = await apiFetch('/api/generate-body', {
-      prompt: bodyPrompt, input_image: generatedFaceUrl,
-    })
-    const bodyRunId = r4.runIds[0]
-    setStep(4, 'active', `En cola (run: ${bodyRunId.slice(0,8)}...) — puede tardar 1–5 min`)
-    generatedBodyUrl = await pollForImage(bodyRunId, 4)
+    // ── Paso 3: Cuerpo con ComfyDeploy ───────────────────
+    setStep(3, 'active', 'Enviando a ComfyDeploy...')
+    const r3 = await apiFetch('/api/generate-body', { prompt: bodyPrompt, input_image: generatedFaceUrl })
+    const bodyRunId = r3.runIds[0]
+    setStep(3, 'active', `En cola (run: ${bodyRunId.slice(0, 8)}...) — puede tardar 1–5 min`)
+    generatedBodyUrl = await pollForImage(bodyRunId, 3)
 
     document.getElementById('result-body-placeholder').style.display = 'none'
     const bodyImg = document.getElementById('result-body-img')
-    bodyImg.src = generatedBodyUrl
-    bodyImg.style.display = 'block'
-    setStep(4, 'done', 'Cuerpo generado')
+    bodyImg.src = generatedBodyUrl; bodyImg.style.display = 'block'
+    setStep(3, 'done', 'Cuerpo generado')
 
-    // ── Paso 5: Perfil AI Persona ─────────────────────────
-    setStep(5, 'active', 'Claude generando perfil completo... (~30 seg)')
-    const r5 = await apiFetch('/api/generate-persona', {
-      nombre, nicho, face_url: generatedFaceUrl, body_url: generatedBodyUrl,
-    })
-    renderPersona(r5.persona, nombre, nicho)
-    setStep(5, 'done', `Perfil de ${nombre} listo`)
+    // ── Paso 4: Perfil AI Persona ─────────────────────────
+    setStep(4, 'active', 'Claude generando perfil completo... (~30 seg)')
+    const r4 = await apiFetch('/api/generate-persona', { nombre, nicho, face_url: generatedFaceUrl, body_url: generatedBodyUrl })
+    generatedPersonaText = r4.persona
+    renderPersona(r4.persona, nombre, nicho)
+    setStep(4, 'done', `Perfil de ${nombre} listo`)
 
     document.getElementById('copy-wrap').style.display = 'flex'
-    document.getElementById('result-section').scrollIntoView({ behavior: 'smooth', block: 'start' })
+    document.getElementById('save-influencer-row').style.display = 'flex'
+    document.getElementById('btn-save-influencer').disabled = false
+    document.getElementById('btn-save-influencer').textContent = 'Guardar Influencer'
+    document.getElementById('save-influencer-status').textContent = ''
 
+    syncPhase4Thumbs()
+    document.getElementById('p4-influencer-label').textContent = `${nombre} · ${nicho}`
+    document.getElementById('btn-generate-plan').disabled = false
+    setContentPlanStatus('Listo. Clic en "Generar Plan Semanal" para comenzar.')
+
+    document.getElementById('result-section').scrollIntoView({ behavior: 'smooth', block: 'start' })
   } catch (err) {
     console.error(err)
-    for (let i = 1; i <= 5; i++) {
+    for (let i = 1; i <= 4; i++) {
       if (document.getElementById(`step-${i}`).classList.contains('active')) {
-        setStep(i, 'error', err.message)
-        break
+        setStep(i, 'error', err.message); break
       }
     }
   } finally {
@@ -494,12 +883,18 @@ async function generateAll() {
   }
 }
 
+function setStep(n, state, detail) {
+  const el  = document.getElementById(`step-${n}`)
+  el.className = `step ${state}`
+  const dot = el.querySelector('.step-dot')
+  if (state === 'done')  dot.textContent = 'ok'
+  else if (state === 'error') dot.textContent = 'x'
+  else dot.textContent = n
+  if (detail !== undefined) document.getElementById(`step-${n}-detail`).textContent = detail
+}
+
 async function apiFetch(path, body) {
-  const res  = await fetch(path, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  })
+  const res  = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
   const data = await res.json()
   if (!res.ok || data.error) throw new Error(data.error || `HTTP ${res.status}`)
   return data
@@ -516,30 +911,89 @@ async function pollForImage(runId, stepNum) {
       const data = await res.json()
       if (data.status === 'success') {
         const images = data.images || []
-        if (!images[0]) throw new Error('ComfyDeploy no devolvió imagen')
+        if (!images[0]) throw new Error('ComfyDeploy no devolvio imagen')
         return images[0]
       }
       if (data.status === 'error') throw new Error(data.message || 'ComfyDeploy error')
       setStep(stepNum, 'active', `Procesando... ${Math.round(elapsed / 1000)}s`)
     } catch (err) {
-      if (err.message.includes('ComfyDeploy')) throw err
+      if (err.message.includes('ComfyDeploy') || err.message.includes('no devolvio')) throw err
       console.warn('poll error:', err.message)
     }
   }
-  throw new Error('Timeout — ComfyDeploy no respondió en 10 minutos')
+  throw new Error('Timeout — ComfyDeploy no respondio en 10 minutos')
 }
 
-// ── Persona rendering (same logic as v1) ────────────────
+// ── Save influencer ───────────────────────────────────────────────────────────
+async function saveCurrentInfluencer() {
+  const nombre = document.getElementById('nombre').value.trim()
+  const nicho  = document.getElementById('nicho').value.trim()
+  const btn    = document.getElementById('btn-save-influencer')
+  const status = document.getElementById('save-influencer-status')
 
-function renderPersona(data, nombre, nicho) {
-  const sections   = data.sections || []
-  const aliasS     = sections.find(s => /Alias/i.test(s.title)) || {}
-  const aliasField = k => (aliasS.fields || []).find(f => new RegExp(k,'i').test(f.label || ''))?.value || ''
+  if (!nombre || !nicho || !generatedFaceUrl || !generatedPersonaText) {
+    status.textContent = 'Faltan datos. Genera el perfil completo primero.'; return
+  }
 
-  const stageName = aliasField('Stage') || nombre
-  const handle    = aliasField('Handle|Usuario')
-  const edad      = aliasField('Edad')
-  const signo     = aliasField('Signo')
+  btn.disabled = true
+  status.textContent = 'Guardando...'
+  status.style.color = '#888'
+
+  try {
+    const res = await fetch('/api/influencers', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nombre, nicho, face_url: generatedFaceUrl, body_url: generatedBodyUrl || '', persona: generatedPersonaText }),
+    })
+    const data = await res.json()
+    if (!res.ok || data.error) throw new Error(data.error || `HTTP ${res.status}`)
+
+    selectedInfluencer = data.influencer
+    status.textContent = `${nombre} guardada`
+    status.style.color = '#4ade80'
+    btn.textContent = 'Guardada'
+
+    await loadInfluencers()
+  } catch (err) {
+    status.textContent = `Error: ${err.message}`
+    status.style.color = '#f87171'
+    btn.disabled = false
+  }
+}
+
+// ── Persona rendering ─────────────────────────────────────────────────────────
+function parsePersona(text) {
+  const sections = []
+  let current = null
+  for (const raw of text.split('\n')) {
+    const line = raw.trim()
+    if (!line) continue
+    const isHeader = /^[💎📛📏🌍🐾🍣🎵🎬💫📲🔥🧷🖋️🧠]/.test(line) && !line.includes(':')
+    if (isHeader) {
+      current = { title: line.replace(/\*\*/g, ''), fields: [] }
+      sections.push(current)
+    } else if (current && line.includes(':')) {
+      const ci  = line.indexOf(':')
+      const key = line.slice(0, ci).replace(/\*\*/g, '').trim()
+      const val = line.slice(ci + 1).replace(/\*\*/g, '').trim()
+      current.fields.push({ key, val, sub: false })
+    } else if (current && /^\s*-/.test(raw)) {
+      const val = line.replace(/^-\s*/, '').replace(/\*\*/g, '').trim()
+      current.fields.push({ key: '', val, sub: true })
+    }
+  }
+  return sections
+}
+
+function renderPersona(text, nombre, nicho) {
+  const sections = parsePersona(text)
+  const aliasS   = sections.find(s => /Alias/i.test(s.title)) || {}
+  const aliasF   = k => (aliasS.fields || []).find(f => new RegExp(k, 'i').test(f.key))?.val || ''
+
+  const stageName = aliasF('Stage|Nombre artístico') || nombre || ''
+  const handle    = aliasF('Handle|Usuario')
+  const edad      = aliasF('Edad|Age')
+  const signo     = aliasF('Signo|Zodiac')
 
   let html = `<div class="profile-card"><div class="profile-hero">`
   if (generatedFaceUrl || generatedBodyUrl) {
@@ -552,23 +1006,22 @@ function renderPersona(data, nombre, nicho) {
     <div class="profile-name">${escHtml(stageName)}</div>
     ${handle ? `<div class="profile-handle">${escHtml(handle)}</div>` : ''}
     ${(edad || signo) ? `<div class="profile-meta">${escHtml([edad, signo].filter(Boolean).join(' · '))}</div>` : ''}
-    <div class="profile-niche">${escHtml(nicho)}</div>
+    <div class="profile-niche">${escHtml(nicho || '')}</div>
   </div></div>`
 
-  const validSections = sections.filter(s => s.fields && s.fields.length)
-  html += `<button class="btn-expand open" onclick="toggleSections(this)">
-    <span class="arrow">▲</span> Ver perfil completo (${validSections.length} secciones) &nbsp;·&nbsp; ✏️ cada campo es editable
-  </button>`
-  html += `<div class="profile-sections" id="profile-sections-grid">`
-  for (const sec of validSections) {
+  html += `<div class="edit-hint">Haz clic en cualquier campo para editarlo</div>`
+  html += `<div class="profile-sections">`
+  for (const sec of sections) {
+    if (/TEMPLATE|💎/.test(sec.title)) continue
+    if (!sec.fields.length) continue
     html += `<div class="profile-section"><div class="section-title">${escHtml(sec.title)}</div>`
     for (const f of sec.fields) {
       if (f.sub) {
-        html += `<div class="profile-field"><span class="field-value sub" contenteditable="true">${escHtml(f.value || '')}</span></div>`
+        html += `<div class="profile-field"><span class="field-value sub" contenteditable="true">${escHtml(f.val)}</span></div>`
       } else {
         html += `<div class="profile-field">
-          <span class="field-label">${escHtml(f.label || '')}</span>
-          <span class="field-value" contenteditable="true">${escHtml(f.value || '')}</span>
+          <span class="field-label">${escHtml(f.key)}</span>
+          <span class="field-value" contenteditable="true">${escHtml(f.val)}</span>
         </div>`
       }
     }
@@ -576,23 +1029,9 @@ function renderPersona(data, nombre, nicho) {
   }
   html += `</div></div>`
 
-  document.getElementById('persona-output').innerHTML = html
-}
-
-function toggleSections(btn) {
-  const grid = document.getElementById('profile-sections-grid')
-  const isOpen = btn.classList.contains('open')
-  if (isOpen) {
-    grid.classList.add('collapsed')
-    btn.classList.remove('open')
-    const count = grid.querySelectorAll('.profile-section').length
-    btn.innerHTML = `<span class="arrow">▲</span> Ver perfil completo (${count} secciones) &nbsp;·&nbsp; ✏️ cada campo es editable`
-  } else {
-    grid.classList.remove('collapsed')
-    btn.classList.add('open')
-    const count = grid.querySelectorAll('.profile-section').length
-    btn.innerHTML = `<span class="arrow">▲</span> Ver perfil completo (${count} secciones) &nbsp;·&nbsp; ✏️ cada campo es editable`
-  }
+  const out = document.getElementById('persona-output')
+  out.innerHTML = html
+  out.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
 function copyPersona() {
@@ -609,15 +1048,260 @@ function copyPersona() {
   })
   navigator.clipboard.writeText(lines.join('\n')).then(() => {
     const btn = event.target
-    btn.textContent = '¡Copiado!'
+    btn.textContent = 'Copiado'
     setTimeout(() => { btn.textContent = 'Copiar perfil' }, 2000)
   })
 }
 
-function escHtml(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')
+// ── Fase 4 ────────────────────────────────────────────────────────────────────
+function syncPhase4Thumbs() {
+  if (generatedFaceUrl) {
+    document.getElementById('p4-face-empty').style.display = 'none'
+    const fi = document.getElementById('p4-face-img')
+    fi.src = generatedFaceUrl; fi.style.display = 'block'
+  }
+  if (generatedBodyUrl) {
+    document.getElementById('p4-body-empty').style.display = 'none'
+    const bi = document.getElementById('p4-body-img')
+    bi.src = generatedBodyUrl; bi.style.display = 'block'
+  }
 }
 
+async function generateContentPlan() {
+  const nombre      = selectedInfluencer?.nombre || document.getElementById('nombre').value.trim()
+  const nicho       = selectedInfluencer?.nicho  || document.getElementById('nicho').value.trim()
+  const weekHistory = selectedInfluencer?.weeks?.map(w => ({ theme: w.theme, summary: w.summary })) || []
+  const btn         = document.getElementById('btn-generate-plan')
+
+  if (!generatedPersonaText) { setContentPlanStatus('Genera el perfil completo primero.', 'error'); return }
+
+  btn.disabled = true
+  document.getElementById('content-calendar-wrap').style.display = 'none'
+  setContentPlanStatus('Claude está diseñando la semana de contenido... ~45 segundos.')
+
+  try {
+    const res = await fetch('/api/generate-content-plan', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ persona: generatedPersonaText, nombre, nicho, face_url: generatedFaceUrl || '', body_url: generatedBodyUrl || '', week_history: weekHistory }),
+    })
+    const data = await res.json()
+    if (!res.ok || data.error) throw new Error(data.error || `HTTP ${res.status}`)
+
+    currentContentPlan = data.plan
+    renderCalendar(data.plan)
+    setContentPlanStatus(`Plan generado: "${data.plan.theme}"`, 'success')
+  } catch (err) {
+    setContentPlanStatus(`Error: ${err.message}`, 'error')
+  } finally {
+    btn.disabled = false
+  }
+}
+
+function renderCalendar(plan) {
+  const cal = document.getElementById('content-calendar')
+  cal.innerHTML = ''
+  for (const dayData of plan.week) cal.appendChild(makeDayCard(dayData))
+  document.getElementById('content-calendar-wrap').style.display = 'block'
+  document.getElementById('btn-generate-week').style.display = 'block'
+  document.getElementById('btn-save-week').style.display = 'none'
+  cal.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
+function makeDayCard(dayData) {
+  const el = document.createElement('div')
+  el.className = 'day-card'
+  el.dataset.dayIndex = dayData.dayIndex
+
+  let variationsHtml = ''
+  for (const v of (dayData.variations || [])) {
+    const slotId = `slot-d${dayData.dayIndex}-v${v.varIndex}`
+    variationsHtml += `
+      <div class="variation-item">
+        <div class="variation-header">
+          <span class="shot-type-tag">${escHtml(v.shotType || '')}</span>
+          <span style="font-size:0.65rem;color:#444;margin-left:auto">Var. ${v.varIndex + 1}</span>
+        </div>
+        <div class="variation-prompt" contenteditable="true"
+             id="prompt-d${dayData.dayIndex}-v${v.varIndex}">${escHtml(v.prompt || '')}</div>
+        <div class="variation-image-slot" id="${slotId}">
+          <div class="slot-placeholder">Sin imagen</div>
+        </div>
+      </div>`
+  }
+
+  el.innerHTML = `
+    <div class="day-card-header">
+      <span class="day-name">${escHtml(dayData.day)}</span>
+      <span class="post-type-badge">${escHtml(dayData.postType || '')}</span>
+    </div>
+    <div class="day-card-body">
+      <div class="day-scene" contenteditable="true" id="scene-d${dayData.dayIndex}">${escHtml(dayData.scene || '')}</div>
+      <div class="day-caption" contenteditable="true" id="caption-d${dayData.dayIndex}">${escHtml(dayData.caption || '')}</div>
+      <div class="variation-list">${variationsHtml}</div>
+    </div>`
+  return el
+}
+
+async function generateWeekImages() {
+  if (!currentContentPlan) return
+  const btn = document.getElementById('btn-generate-week')
+  btn.disabled = true
+  btn.textContent = 'Generando semana... (puede tardar 10–20 minutos)'
+  document.getElementById('btn-save-week').style.display = 'none'
+
+  let completed = 0
+  const total = currentContentPlan.week.length
+
+  for (const dayData of currentContentPlan.week) {
+    for (const v of (dayData.variations || [])) {
+      const slot = document.getElementById(`slot-d${dayData.dayIndex}-v${v.varIndex}`)
+      if (slot) slot.innerHTML = '<div class="slot-spinner"></div>'
+    }
+  }
+
+  setContentPlanStatus(`Lanzando ${total} runs en paralelo (1 por día, 4 imágenes c/u)...`)
+
+  const dayRuns = currentContentPlan.week.map(dayData => generateDayImages(dayData, () => {
+    completed++
+    setContentPlanStatus(`Días completados: ${completed}/${total}...`)
+  }))
+
+  try {
+    await Promise.all(dayRuns)
+    setContentPlanStatus('Semana completa generada. 20 imágenes listas.', 'success')
+    document.getElementById('btn-save-week').style.display = 'block'
+  } catch (err) {
+    setContentPlanStatus(`Error parcial: ${err.message}`, 'error')
+  } finally {
+    btn.disabled = false
+    btn.textContent = 'Generar Semana Completa — 20 Imágenes (5 días × 4 variaciones)'
+  }
+}
+
+async function generateDayImages(dayData, onComplete) {
+  const prompts = (dayData.variations || []).map((v, i) => {
+    const el = document.getElementById(`prompt-d${dayData.dayIndex}-v${i}`)
+    return el ? el.innerText.trim() : (v.prompt || '')
+  })
+
+  try {
+    const res = await fetch('/api/generate-content-day', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ face_url: generatedFaceUrl, body_url: generatedBodyUrl, prompts }),
+    })
+    const data = await res.json()
+    if (!res.ok || data.error) throw new Error(data.error || `HTTP ${res.status}`)
+
+    await pollDaySlot(data.runIds[0], dayData.dayIndex, dayData.variations?.length || 4)
+    if (onComplete) onComplete()
+  } catch (err) {
+    for (const v of (dayData.variations || [])) {
+      const slot = document.getElementById(`slot-d${dayData.dayIndex}-v${v.varIndex}`)
+      if (slot) slot.innerHTML = `<div class="slot-placeholder" style="color:#f87171">Error: ${escHtml(err.message)}</div>`
+    }
+    if (onComplete) onComplete()
+  }
+}
+
+async function pollDaySlot(runId, dayIndex, varCount, deadline = Date.now() + 720_000) {
+  while (Date.now() < deadline) {
+    await sleep(POLL_INTERVAL)
+    try {
+      const res  = await fetch(`/api/status/${runId}`)
+      const data = await res.json()
+
+      if (data.status === 'success') {
+        const images = data.images || []
+        for (let i = 0; i < varCount; i++) {
+          const slot   = document.getElementById(`slot-d${dayIndex}-v${i}`)
+          const imgUrl = images[i]
+          if (slot && imgUrl) {
+            const fname = `dia${dayIndex + 1}_var${i + 1}.jpg`
+            slot.innerHTML = `
+              <img src="${escHtml(imgUrl)}" alt="Var ${i + 1}" onclick="window.open('${escHtml(imgUrl)}','_blank')">
+              <button class="btn-download" onclick="downloadImage('${escHtml(imgUrl)}','${escHtml(fname)}')">Descargar</button>`
+          } else if (slot) {
+            slot.innerHTML = '<div class="slot-placeholder" style="color:#f87171">Sin imagen</div>'
+          }
+        }
+        return
+      }
+      if (data.status === 'error') {
+        for (let i = 0; i < varCount; i++) {
+          const slot = document.getElementById(`slot-d${dayIndex}-v${i}`)
+          if (slot) slot.innerHTML = `<div class="slot-placeholder" style="color:#f87171">${escHtml(data.message || 'error')}</div>`
+        }
+        return
+      }
+    } catch (err) { console.warn('poll day error:', err.message) }
+  }
+  for (let i = 0; i < varCount; i++) {
+    const slot = document.getElementById(`slot-d${dayIndex}-v${i}`)
+    if (slot) slot.innerHTML = '<div class="slot-placeholder" style="color:#f87171">Timeout</div>'
+  }
+}
+
+async function downloadImage(url, filename) {
+  try {
+    const res  = await fetch(url)
+    const blob = await res.blob()
+    const a    = document.createElement('a')
+    a.href     = URL.createObjectURL(blob)
+    a.download = filename
+    a.click()
+    URL.revokeObjectURL(a.href)
+  } catch {
+    window.open(url, '_blank')
+  }
+}
+
+async function saveWeek() {
+  if (!selectedInfluencer) {
+    setContentPlanStatus('Guarda la influencer primero para poder guardar semanas.', 'error')
+    return
+  }
+  if (!currentContentPlan) {
+    setContentPlanStatus('Genera un plan de contenido primero.', 'error')
+    return
+  }
+
+  const btn = document.getElementById('btn-save-week')
+  btn.disabled = true
+  btn.textContent = 'Guardando...'
+
+  try {
+    const res = await fetch(`/api/influencers/${selectedInfluencer.id}/weeks`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ theme: currentContentPlan.theme, summary: currentContentPlan.summary || '', plan: currentContentPlan }),
+    })
+    const data = await res.json()
+    if (!res.ok || data.error) throw new Error(data.error || `HTTP ${res.status}`)
+
+    selectedInfluencer.weeks = [...(selectedInfluencer.weeks || []), { week_id: data.week_id, theme: currentContentPlan.theme, summary: currentContentPlan.summary }]
+    await loadInfluencers()
+    btn.textContent = 'Semana guardada'
+    setContentPlanStatus(`Semana "${currentContentPlan.theme}" guardada en el historial.`, 'success')
+  } catch (err) {
+    setContentPlanStatus(`Error al guardar: ${err.message}`, 'error')
+    btn.disabled = false
+    btn.textContent = 'Guardar semana en historial'
+  }
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function setContentPlanStatus(msg, cls = '') {
+  const el = document.getElementById('content-plan-status')
+  el.textContent = msg; el.className = `status-bar ${cls}`
+}
+function escHtml(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+}
+function escAttr(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
+}
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)) }
 </script>
 </body>
