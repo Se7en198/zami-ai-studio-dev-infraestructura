@@ -3,20 +3,109 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Zami AI Studio</title>
+<title>Zammy Girls — AI Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0 }
   body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: #0d0d0d; color: #e8e8e8;
-    min-height: 100vh; padding: 32px 16px;
+    background: #0A0A0A; color: #e8e8e8;
+    height: 100vh; overflow: hidden; padding: 0;
   }
-  .container { max-width: 1080px; margin: 0 auto }
-  h1 { font-size: 1.4rem; font-weight: 700; margin-bottom: 4px; color: #fff }
-  .subtitle { font-size: 0.85rem; color: #666; margin-bottom: 28px }
+
+  /* ── Two-column layout ─────────────────────────────────── */
+  .container {
+    display: flex; max-width: 100%; margin: 0; padding: 0;
+    height: 100vh; overflow: hidden;
+  }
+
+  /* ── Left Sidebar ─────────────────────────────────────── */
+  #influencers-panel {
+    width: 260px; flex-shrink: 0; height: 100vh; overflow-y: auto;
+    background: #0D0D0D; border-right: 1px solid #1a1a1a;
+    display: flex; flex-direction: column; padding: 0;
+  }
+  .sidebar-logo { padding: 28px 20px 20px; border-bottom: 1px solid #1a1a1a; }
+  .sidebar-logo-text {
+    font-family: 'Bebas Neue', 'Arial Black', Impact, sans-serif;
+    font-size: 2.4rem; color: #fff; line-height: 0.85;
+    display: block; letter-spacing: 0.04em;
+  }
+  .sidebar-logo-line { width: 36px; height: 3px; background: #FF0080; margin-top: 10px; }
+  .influencers-panel-header { display: none; }
+  .influencers-grid {
+    flex: 1; padding: 14px 12px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+    align-content: start;
+  }
+  .influencer-card { border-radius: 8px; }
+  .influencer-card-img { aspect-ratio: 2/3; object-position: top; }
+  .influencer-card-img-placeholder { aspect-ratio: 2/3; }
+  .influencer-card-info { padding: 7px 10px; }
+  .influencer-card-name {
+    font-family: 'Bebas Neue', 'Arial Black', Impact, sans-serif;
+    font-size: 0.9rem; letter-spacing: 0.05em;
+  }
+  .btn-nueva {
+    font-family: 'Bebas Neue', 'Arial Black', Impact, sans-serif;
+    font-size: 1rem; letter-spacing: 0.1em; text-transform: uppercase;
+    background: #FF0080; color: #000; border: none;
+    border-radius: 0; width: 100%; padding: 18px 16px; margin-top: auto;
+    flex-shrink: 0;
+  }
+  .btn-nueva:hover:not(:disabled) { background: #e0006f; color: #000; }
+
+  /* ── Right Workspace ──────────────────────────────────── */
+  #workspace {
+    flex: 1; height: 100vh; overflow-y: auto;
+    padding: 40px 48px; background: #0A0A0A;
+  }
+  h1 {
+    font-family: 'Bebas Neue', 'Arial Black', Impact, sans-serif;
+    font-size: 3.2rem; font-weight: 400; letter-spacing: 0.06em;
+    color: #fff; margin-bottom: 4px; line-height: 1;
+  }
+  .subtitle { font-size: 0.82rem; color: #555; margin-bottom: 28px; }
+
+  /* ── Labels → Bebas Neue ──────────────────────────────── */
+  label {
+    font-family: 'Bebas Neue', 'Arial Black', Impact, sans-serif;
+    font-size: 0.82rem; font-weight: 400; letter-spacing: 0.1em;
+    color: #FF0080; margin-bottom: 6px; text-transform: uppercase;
+  }
+
+  /* ── Mode Tabs redesign ───────────────────────────────── */
+  .mode-tabs {
+    background: #0D0D0D; border: 1px solid #1e1e1e; border-radius: 6px; padding: 4px;
+  }
+  .mode-tab {
+    font-family: 'Bebas Neue', 'Arial Black', Impact, sans-serif;
+    font-size: 1rem; letter-spacing: 0.08em; padding: 12px 16px;
+    border-radius: 4px;
+  }
+  .mode-tab.active { background: #FF0080; color: #000; border: none; }
+  .mode-tab:hover:not(.active):not(:disabled) { color: #fff; background: #1a1a1a; }
+
+  /* ── Generate button ──────────────────────────────────── */
+  #btn-main {
+    font-family: 'Bebas Neue', 'Arial Black', Impact, sans-serif;
+    font-size: 1.3rem; letter-spacing: 0.12em; text-transform: uppercase;
+    padding: 18px 20px; border-radius: 6px; background: #FF0080;
+    box-shadow: 0 0 28px rgba(255,0,128,0.25);
+  }
+  #btn-main:hover:not(:disabled) { background: #e0006f; }
+
+  /* ── Phase 4 header ───────────────────────────────────── */
+  .phase-header h2 {
+    font-family: 'Bebas Neue', 'Arial Black', Impact, sans-serif;
+    font-size: 2rem; letter-spacing: 0.06em; font-weight: 400;
+  }
+  .phase-badge {
+    background: rgba(255,0,128,0.15); border-color: rgba(255,0,128,0.4); color: #FF0080;
+  }
   .badge {
-    display: inline-block; background: #e85d8a22; border: 1px solid #e85d8a44;
-    color: #e85d8a; font-size: 0.65rem; font-weight: 700; padding: 2px 8px;
+    display: inline-block; background: rgba(255,0,128,0.13); border: 1px solid rgba(255,0,128,0.27);
+    color: #FF0080; font-size: 0.65rem; font-weight: 700; padding: 2px 8px;
     border-radius: 20px; letter-spacing: 0.06em; text-transform: uppercase;
     vertical-align: middle; margin-left: 8px;
   }
@@ -27,12 +116,12 @@
   }
   .row { display: flex; gap: 12px; margin-top: 14px; align-items: flex-end }
   button {
-    flex: 1; padding: 11px 20px; background: #e85d8a;
+    flex: 1; padding: 11px 20px; background: #FF0080;
     border: none; border-radius: 10px; color: #fff;
     font-weight: 700; font-size: 0.9rem; cursor: pointer;
     transition: background .15s, opacity .15s;
   }
-  button:hover:not(:disabled) { background: #d94c79 }
+  button:hover:not(:disabled) { background: #e0006f }
   button:disabled { opacity: .45; cursor: not-allowed }
   input[type=text], select, textarea {
     width: 100%; background: #0d0d0d; border: 1px solid #2a2a2a;
@@ -40,7 +129,7 @@
     padding: 11px 14px; font-family: inherit; outline: none;
     transition: border-color .15s;
   }
-  input[type=text]:focus, select:focus, textarea:focus { border-color: #e85d8a }
+  input[type=text]:focus, select:focus, textarea:focus { border-color: #FF0080 }
   select { cursor: pointer }
   select option { background: #1a1a1a }
   textarea { resize: vertical; min-height: 80px; line-height: 1.5 }
@@ -71,8 +160,8 @@
     width: 18px; height: 18px; border-radius: 50%; background: #555;
     transition: left .2s, background .2s;
   }
-  .toggle-switch.on { background: #e85d8a33; border: 1px solid #e85d8a66 }
-  .toggle-switch.on::after { left: 23px; background: #e85d8a }
+  .toggle-switch.on { background: rgba(255,0,128,0.2); border: 1px solid rgba(255,0,128,0.4) }
+  .toggle-switch.on::after { left: 23px; background: #FF0080 }
   .toggle-body { display: none; padding: 16px; border-top: 1px solid #2a2a2a; background: #0d0d0d }
   .toggle-body.open { display: block }
 
@@ -84,10 +173,10 @@
     cursor: pointer; transition: border-color .15s; position: relative; min-height: 120px;
     justify-content: center; text-align: center;
   }
-  .img-slot:hover { border-color: #e85d8a66 }
+  .img-slot:hover { border-color: rgba(255,0,128,0.4) }
   .img-slot.loaded { border-color: #4ade8066; border-style: solid }
-  .img-slot.uploading { border-color: #e85d8a44; animation: pulse-border 1s ease-in-out infinite }
-  @keyframes pulse-border { 0%, 100% { border-color: #e85d8a22 } 50% { border-color: #e85d8a88 } }
+  .img-slot.uploading { border-color: rgba(255,0,128,0.27); animation: pulse-border 1s ease-in-out infinite }
+  @keyframes pulse-border { 0%, 100% { border-color: rgba(255,0,128,0.13) } 50% { border-color: rgba(255,0,128,0.53) } }
   .img-slot input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100% }
   .img-slot-preview { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 7px; display: none }
   .img-slot.loaded .img-slot-preview { display: block }
@@ -107,12 +196,12 @@
 
   /* ── Param Groups ───────────────────────────────────── */
   .param-group { margin-bottom: 16px }
-  .param-group-title { font-size: 0.72rem; font-weight: 700; color: #e85d8a; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px }
+  .param-group-title { font-size: 0.72rem; font-weight: 700; color: #FF0080; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px }
   .param-field { display: flex; flex-direction: column; gap: 4px }
   .param-label { font-size: 0.7rem; color: #666; text-transform: uppercase; letter-spacing: 0.04em }
   .param-select { background: #111; border: 1px solid #222; border-radius: 8px; color: #ccc; font-size: 0.82rem; padding: 7px 10px; width: 100% }
-  .param-select:focus { border-color: #e85d8a66 }
-  .param-select.selected { border-color: #e85d8a88; color: #fff }
+  .param-select:focus { border-color: rgba(255,0,128,0.4) }
+  .param-select.selected { border-color: rgba(255,0,128,0.53); color: #fff }
 
   /* ── Progress Steps ─────────────────────────────────── */
   .steps {
@@ -126,7 +215,7 @@
     display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     font-size: 0.72rem; font-weight: 700; color: #444; margin-top: 1px;
   }
-  .step.active .step-dot { border-color: #e85d8a; color: #e85d8a; animation: pulse 1.2s ease-in-out infinite }
+  .step.active .step-dot { border-color: #FF0080; color: #FF0080; animation: pulse 1.2s ease-in-out infinite }
   .step.done .step-dot  { border-color: #4ade80; background: #4ade8020; color: #4ade80 }
   .step.error .step-dot { border-color: #f87171; background: #f8717120; color: #f87171 }
   @keyframes pulse { 0%, 100% { opacity: 1 } 50% { opacity: 0.4 } }
@@ -153,17 +242,17 @@
   .profile-photos img { width: 50%; height: 280px; object-fit: cover; object-position: top }
   .profile-hero-info { flex: 1; padding: 28px 24px; display: flex; flex-direction: column; justify-content: center; gap: 8px }
   .profile-name { font-size: 1.8rem; font-weight: 800; color: #fff; margin: 0 }
-  .profile-handle { font-size: 0.95rem; color: #e85d8a; font-weight: 600 }
+  .profile-handle { font-size: 0.95rem; color: #FF0080; font-weight: 600 }
   .profile-meta { font-size: 0.82rem; color: #666 }
-  .profile-niche { display: inline-block; background: #e85d8a22; border: 1px solid #e85d8a44; color: #e85d8a; font-size: 0.72rem; font-weight: 700; padding: 3px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 4px; width: fit-content }
+  .profile-niche { display: inline-block; background: rgba(255,0,128,0.13); border: 1px solid rgba(255,0,128,0.27); color: #FF0080; font-size: 0.72rem; font-weight: 700; padding: 3px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 4px; width: fit-content }
   .profile-sections { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1px; background: #222; border-top: 1px solid #222 }
   .profile-section { background: #161616; padding: 18px 20px }
-  .section-title { font-size: 0.78rem; font-weight: 700; color: #e85d8a; text-transform: uppercase; letter-spacing: 0.06em; margin: 0 0 12px; padding-bottom: 8px; border-bottom: 1px solid #2a2a2a }
+  .section-title { font-size: 0.78rem; font-weight: 700; color: #FF0080; text-transform: uppercase; letter-spacing: 0.06em; margin: 0 0 12px; padding-bottom: 8px; border-bottom: 1px solid #2a2a2a }
   .profile-field { display: flex; flex-direction: column; margin-bottom: 10px }
   .field-label { font-size: 0.68rem; font-weight: 700; color: #555; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 2px }
   .field-value { font-size: 0.85rem; color: #ccc; line-height: 1.5; border-radius: 6px; padding: 4px 6px; min-height: 1.5em; outline: none; transition: background .15s, color .15s; cursor: text; word-break: break-word }
   .field-value:hover { background: #1e1e1e }
-  .field-value:focus { background: #1a1a1a; color: #fff; box-shadow: 0 0 0 1px #e85d8a44 }
+  .field-value:focus { background: #1a1a1a; color: #fff; box-shadow: 0 0 0 1px rgba(255,0,128,0.27) }
   .field-value.sub { color: #aaa; padding-left: 12px }
   .edit-hint { font-size: 0.7rem; color: #444; text-align: right; padding: 8px 20px 4px }
   .btn-copy { margin-top: 12px; flex: unset; padding: 9px 20px; background: #2a2a2a; font-size: 0.82rem }
@@ -176,11 +265,11 @@
   .influencers-panel { background: #161616; border: 1px solid #2a2a2a; border-radius: 14px; padding: 20px; margin-bottom: 24px }
   .influencers-panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px }
   .influencers-panel-title { font-size: 0.95rem; font-weight: 700; color: #fff }
-  .btn-nueva { flex: unset; padding: 8px 16px; font-size: 0.8rem; background: transparent; border: 1px solid #e85d8a; color: #e85d8a; border-radius: 8px }
-  .btn-nueva:hover:not(:disabled) { background: #e85d8a22 }
+  .btn-nueva { flex: unset; padding: 8px 16px; font-size: 0.8rem; background: transparent; border: 1px solid #FF0080; color: #FF0080; border-radius: 8px }
+  .btn-nueva:hover:not(:disabled) { background: rgba(255,0,128,0.13) }
   .influencers-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px }
   .influencer-card { background: #111; border: 1px solid #2a2a2a; border-radius: 12px; overflow: hidden; cursor: pointer; transition: border-color .15s, transform .1s }
-  .influencer-card:hover { border-color: #e85d8a88; transform: translateY(-2px) }
+  .influencer-card:hover { border-color: rgba(255,0,128,0.53); transform: translateY(-2px) }
   .influencer-card.active { border-color: #4ade80 }
   .influencer-card-img { width: 100%; aspect-ratio: 1; object-fit: cover; object-position: top; display: block }
   .influencer-card-img-placeholder { width: 100%; aspect-ratio: 1; background: #1a1a1a; display: flex; align-items: center; justify-content: center; color: #333; font-size: 2rem }
@@ -188,13 +277,13 @@
   .influencer-card-name { font-size: 0.85rem; font-weight: 700; color: #fff; margin-bottom: 2px }
   .influencer-card-nicho { font-size: 0.72rem; color: #888; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
   .influencer-card-weeks { font-size: 0.68rem; color: #555 }
-  .btn-seleccionar-inf { width: 100%; margin-top: 8px; padding: 6px; font-size: 0.75rem; background: #e85d8a; border-radius: 6px; flex: unset }
+  .btn-seleccionar-inf { width: 100%; margin-top: 8px; padding: 6px; font-size: 0.75rem; background: #FF0080; border-radius: 6px; flex: unset }
   .btn-seleccionar-inf.active { background: #4ade80; color: #000 }
 
   /* ── Fase 4 ─────────────────────────────────────────── */
   .phase-header { display: flex; align-items: center; gap: 10px; margin: 36px 0 16px }
   .phase-header h2 { font-size: 1.05rem; font-weight: 700; color: #fff }
-  .phase-badge { background: #e85d8a22; border: 1px solid #e85d8a44; color: #e85d8a; font-size: 0.7rem; font-weight: 700; padding: 2px 10px; border-radius: 20px; letter-spacing: 0.06em; text-transform: uppercase }
+  .phase-badge { background: rgba(255,0,128,0.13); border: 1px solid rgba(255,0,128,0.27); color: #FF0080; font-size: 0.7rem; font-weight: 700; padding: 2px 10px; border-radius: 20px; letter-spacing: 0.06em; text-transform: uppercase }
   .persona-thumb { display: flex; flex-direction: column; align-items: center; gap: 4px }
   .persona-thumb img { width: 72px; height: 72px; object-fit: cover; border-radius: 8px; border: 2px solid #4ade80 }
   .persona-thumb .thumb-empty { width: 72px; height: 72px; border-radius: 8px; border: 2px dashed #333; display: flex; align-items: center; justify-content: center; color: #444; font-size: 0.7rem; text-align: center }
@@ -204,25 +293,25 @@
   .day-card { background: #161616; border: 1px solid #2a2a2a; border-radius: 14px; overflow: hidden }
   .day-card-header { background: #1a1a1a; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #2a2a2a }
   .day-name { font-size: 0.85rem; font-weight: 800; color: #fff; text-transform: uppercase; letter-spacing: 0.06em }
-  .post-type-badge { background: #e85d8a22; border: 1px solid #e85d8a44; color: #e85d8a; font-size: 0.62rem; font-weight: 700; padding: 2px 8px; border-radius: 20px; text-transform: uppercase }
+  .post-type-badge { background: rgba(255,0,128,0.13); border: 1px solid rgba(255,0,128,0.27); color: #FF0080; font-size: 0.62rem; font-weight: 700; padding: 2px 8px; border-radius: 20px; text-transform: uppercase }
   .day-card-body { padding: 12px 14px }
   .day-scene, .day-caption { font-size: 0.78rem; color: #888; margin-bottom: 8px; line-height: 1.5; border-radius: 6px; padding: 6px 8px; background: #0d0d0d; outline: none; width: 100%; cursor: text; display: block }
-  .day-scene:focus, .day-caption:focus { background: #1a1a1a; color: #ddd; box-shadow: 0 0 0 1px #e85d8a44 }
+  .day-scene:focus, .day-caption:focus { background: #1a1a1a; color: #ddd; box-shadow: 0 0 0 1px rgba(255,0,128,0.27) }
   .day-caption { color: #aaa; font-size: 0.8rem }
   .variation-list { display: flex; flex-direction: column; gap: 8px }
   .variation-item { border: 1px solid #1e1e1e; border-radius: 8px; overflow: hidden }
   .variation-header { display: flex; align-items: center; gap: 8px; padding: 6px 10px; background: #111 }
   .shot-type-tag { font-size: 0.62rem; font-weight: 700; color: #666; text-transform: uppercase; letter-spacing: 0.04em; background: #1e1e1e; padding: 2px 7px; border-radius: 20px }
   .variation-prompt { font-size: 0.72rem; color: #666; padding: 7px 10px; line-height: 1.5; background: #0d0d0d; min-height: 52px; outline: none; cursor: text; width: 100%; display: block }
-  .variation-prompt:focus { background: #111; color: #bbb; box-shadow: inset 0 0 0 1px #e85d8a22 }
+  .variation-prompt:focus { background: #111; color: #bbb; box-shadow: inset 0 0 0 1px rgba(255,0,128,0.13) }
   .variation-image-slot { position: relative; background: #111; border-top: 1px solid #1a1a1a; min-height: 70px; display: flex; align-items: center; justify-content: center }
   .variation-image-slot img { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; cursor: pointer }
-  .slot-spinner { width: 18px; height: 18px; border: 2px solid #2a2a2a; border-top-color: #e85d8a; border-radius: 50%; animation: spin .8s linear infinite }
+  .slot-spinner { width: 18px; height: 18px; border: 2px solid #2a2a2a; border-top-color: #FF0080; border-radius: 50%; animation: spin .8s linear infinite }
   .slot-placeholder { font-size: 0.68rem; color: #333; text-align: center }
   @keyframes spin { to { transform: rotate(360deg) } }
   .btn-download { position: absolute; bottom: 5px; right: 5px; padding: 3px 9px; background: rgba(0,0,0,.75); border: 1px solid #444; border-radius: 5px; color: #ccc; font-size: 0.65rem; font-weight: 600; cursor: pointer; flex: unset; backdrop-filter: blur(4px); transition: background .15s }
-  .btn-download:hover { background: rgba(232,93,138,.8); border-color: #e85d8a; color: #fff }
-  .btn-generate-week { margin-top: 18px; width: 100%; padding: 13px; font-size: 0.95rem; background: linear-gradient(135deg, #e85d8a, #a855f7); border-radius: 12px; letter-spacing: 0.02em; flex: unset }
+  .btn-download:hover { background: rgba(232,93,138,.8); border-color: #FF0080; color: #fff }
+  .btn-generate-week { margin-top: 18px; width: 100%; padding: 13px; font-size: 0.95rem; background: linear-gradient(135deg, #FF0080, #a855f7); border-radius: 12px; letter-spacing: 0.02em; flex: unset }
   .btn-save-week { margin-top: 10px; flex: unset; padding: 9px 20px; background: #4ade8033; border: 1px solid #4ade8066; color: #4ade80; font-size: 0.82rem; border-radius: 10px; width: 100% }
   .btn-save-week:hover:not(:disabled) { background: #4ade8055 }
   .deployment-id { font-size: 0.72rem; color: #333; margin-top: 28px; text-align: center }
@@ -233,34 +322,209 @@
   /* ── Mode Tabs ───────────────────────────────────────── */
   .mode-tabs { display: flex; gap: 4px; margin-top: 14px; margin-bottom: 4px; background: #111; border-radius: 10px; padding: 4px }
   .mode-tab { flex: 1; padding: 9px 16px; background: transparent; border: none; border-radius: 8px; color: #666; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: background .15s, color .15s }
-  .mode-tab.active { background: #e85d8a22; color: #e85d8a; border: 1px solid #e85d8a44 }
+  .mode-tab.active { background: rgba(255,0,128,0.13); color: #FF0080; border: 1px solid rgba(255,0,128,0.27) }
   .mode-tab:hover:not(.active):not(:disabled) { color: #ccc; background: #1a1a1a }
 
   /* ── Claude Mode Section ─────────────────────────────── */
   .claude-ref-slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; margin-top: 8px }
   .claude-hint { font-size: 0.75rem; color: #555; background: #111; border: 1px solid #1e1e1e; border-radius: 8px; padding: 8px 12px; margin-top: 12px; line-height: 1.5 }
   .claude-params-summary { background: #111; border: 1px solid #1e1e1e; border-radius: 10px; padding: 12px 14px; margin-top: 12px }
-  .claude-params-summary-title { font-size: 0.72rem; font-weight: 700; color: #e85d8a; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px }
+  .claude-params-summary-title { font-size: 0.72rem; font-weight: 700; color: #FF0080; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px }
   .claude-params-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 3px 10px }
   .claude-param-item { font-size: 0.72rem; color: #666 }
   .claude-param-item span { color: #bbb }
+
+  /* ── Heuristic UX/UI Improvements ────────────────────── */
+
+  /* Labels → legibles, no fuchsia agresivo en formularios */
+  label { color: #aaa; }
+
+  /* Toggle switch → borde visible cuando está OFF */
+  .toggle-switch { border: 1px solid #444; }
+  .toggle-switch.on { border-color: #FF0080; }
+  .toggle-switch::after { background: #666; }
+  .toggle-switch.on::after { left: 23px; background: #FF0080; }
+
+  /* Inputs → borde más visible + glow al focus */
+  input[type=text], select, textarea { border-color: #333; }
+  input[type=text]:focus, select:focus, textarea:focus {
+    border-color: #FF0080;
+    box-shadow: 0 0 0 3px rgba(255,0,128,0.08);
+  }
+
+  /* Botones → feedback de click */
+  button:active:not(:disabled) { transform: scale(0.97); }
+
+  /* Status bar → más prominente */
+  .status-bar {
+    background: #111; border: 1px solid #222;
+    border-radius: 8px; padding: 10px 14px;
+  }
+  .status-bar.success { background: rgba(74,222,128,0.07); border-color: rgba(74,222,128,0.3); }
+  .status-bar.error   { background: rgba(248,113,113,0.07); border-color: rgba(248,113,113,0.3); }
+
+  /* Step dot → pulse de sombra (más claro como indicador de carga) */
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255,0,128,0.6); }
+    50%       { box-shadow: 0 0 0 7px rgba(255,0,128,0.12); }
+  }
+
+  /* Result images → hover hint */
+  .result-img-wrap img:hover { filter: brightness(1.08); box-shadow: 0 0 20px rgba(255,0,128,0.15); }
+  .result-img-label::after { content: ' — click para ampliar'; font-size: 0.62rem; color: #444; margin-left: 4px; }
+
+  /* Image upload slots → affordance */
+  .img-slot { background: #111; }
+  .img-slot:hover { background: rgba(255,0,128,0.04); border-color: rgba(255,0,128,0.5); }
+  .img-slot-icon { color: #444; font-size: 1.8rem; }
+
+  /* Upload spinner overlay */
+  .img-slot.uploading::after {
+    content: ''; position: absolute; top: 50%; left: 50%;
+    width: 22px; height: 22px;
+    border: 2px solid rgba(255,0,128,0.2); border-top-color: #FF0080;
+    border-radius: 50%; animation: spin .8s linear infinite;
+    transform: translate(-50%, -50%); z-index: 2;
+  }
+
+  /* Param groups → card visual */
+  .param-group {
+    background: #111; border: 1px solid #1e1e1e;
+    border-radius: 10px; padding: 14px; margin-bottom: 10px;
+  }
+  .param-group-title { padding-bottom: 8px; border-bottom: 1px solid #222; margin-bottom: 10px; }
+
+  /* Sidebar scrollbar styling */
+  #influencers-panel { scrollbar-width: thin; scrollbar-color: #333 #0D0D0D; }
+  #influencers-panel::-webkit-scrollbar { width: 4px; }
+  #influencers-panel::-webkit-scrollbar-track { background: #0D0D0D; }
+  #influencers-panel::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+  #influencers-panel::-webkit-scrollbar-thumb:hover { background: #444; }
+
+  /* Influencer card active → más visible */
+  .influencer-card.active { border-width: 2px; box-shadow: 0 0 12px rgba(74,222,128,0.12); }
+  .btn-seleccionar-inf.active { box-shadow: 0 0 8px rgba(74,222,128,0.25); }
+
+  /* Field values → hint de editabilidad */
+  .field-value { border-bottom: 1px dashed rgba(255,0,128,0.18); }
+  .field-value:hover { border-bottom-color: rgba(255,0,128,0.42); }
+
+  /* Responsive sidebar */
+  @media (max-width: 960px) {
+    #influencers-panel { width: 200px; }
+    #workspace { padding: 28px 32px; }
+    .influencers-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ── Landing Hero ─────────────────────────────────────── */
+  #landing-hero {
+    position: fixed; inset: 0; z-index: 1000;
+    background: #FF0080;
+    overflow: hidden;
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+  #landing-hero.exit {
+    opacity: 0; transform: translateY(-24px); pointer-events: none;
+  }
+  .hero-bg-text {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    pointer-events: none; user-select: none;
+    line-height: 0.82;
+  }
+  .hero-word {
+    font-family: 'Bebas Neue', 'Arial Black', Impact, sans-serif;
+    font-weight: 400; font-size: 34vw;
+    color: #000; letter-spacing: -0.01em;
+    text-align: center; width: 100%; display: block;
+  }
+  .hero-center-photo {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 28vw; max-width: 380px; height: 88vh; z-index: 2;
+  }
+  .hero-center-photo img {
+    width: 100%; height: 100%; object-fit: cover; object-position: top; display: block;
+  }
+  .hero-photo-empty {
+    width: 100%; height: 100%;
+    background: linear-gradient(160deg, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0.08) 100%);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .hero-photo-empty-text {
+    font-family: 'Bebas Neue', 'Arial Black', Impact, sans-serif;
+    font-size: 0.9rem; color: rgba(255,255,255,0.45);
+    text-align: center; line-height: 1.8; letter-spacing: 0.12em; text-transform: uppercase;
+  }
+  .hero-bottom {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    display: flex; align-items: flex-end; justify-content: space-between;
+    padding: 28px 36px; z-index: 3;
+  }
+  .hero-brand-name {
+    font-family: 'Bebas Neue', 'Arial Black', Impact, sans-serif;
+    font-size: 1rem; color: #000; letter-spacing: 0.14em; font-weight: 400;
+    display: block;
+  }
+  .hero-brand-tagline {
+    font-size: 0.68rem; color: rgba(0,0,0,0.55);
+    font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+    display: block; margin-top: 4px;
+  }
+  .btn-hero-cta {
+    background: #000; color: #FF0080;
+    border: none; padding: 16px 40px;
+    font-family: 'Bebas Neue', 'Arial Black', Impact, sans-serif;
+    font-size: 1.15rem; letter-spacing: 0.12em;
+    text-transform: uppercase; cursor: pointer;
+    border-radius: 0; flex: unset;
+    transition: background 0.15s;
+  }
+  .btn-hero-cta:hover:not(:disabled) { background: #1a1a1a; color: #FF0080 }
 </style>
 </head>
 <body>
-<div class="container">
-  <h1>Zami AI Studio <span class="badge">v3 AION</span></h1>
-  <p class="subtitle">Nombre + nicho. Configura imágenes de referencia, parámetros detallados y/o prompt libre — o genera directo con AION.</p>
 
-  <!-- ── MIS INFLUENCERS ─────────────────────────────────────────────────────── -->
+<!-- ── LANDING HERO ───────────────────────────────────────────────────────────── -->
+<div id="landing-hero">
+  <div class="hero-bg-text">
+    <span class="hero-word">ZAMMY</span>
+    <span class="hero-word">GIRLS</span>
+  </div>
+  <div class="hero-center-photo">
+    <div class="hero-photo-empty" id="hero-photo-empty">
+      <span class="hero-photo-empty-text">Tu primera<br>influencer<br>aquí</span>
+    </div>
+    <img id="hero-photo-img" style="display:none;width:100%;height:100%;object-fit:cover;object-position:top" alt="">
+  </div>
+  <div class="hero-bottom">
+    <div>
+      <span class="hero-brand-name">ZAMMY GIRLS</span>
+      <span class="hero-brand-tagline">Influencers con IA · Creadas para dominar</span>
+    </div>
+    <button class="btn-hero-cta" onclick="enterStudio()">Crear influencer</button>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- ── SIDEBAR ──────────────────────────────────────────────────────────────── -->
   <div class="influencers-panel" id="influencers-panel">
-    <div class="influencers-panel-header">
-      <span class="influencers-panel-title">Mis Influencers</span>
-      <button class="btn-nueva" onclick="showNewInfluencerFlow()">+ Nueva Influencer</button>
+    <div class="sidebar-logo">
+      <span class="sidebar-logo-text">ZAMMY<br>GIRLS</span>
+      <div class="sidebar-logo-line"></div>
     </div>
     <div class="influencers-grid" id="influencers-grid">
       <div style="font-size:0.8rem;color:#444;grid-column:1/-1">Cargando...</div>
     </div>
+    <button class="btn-nueva" onclick="showNewInfluencerFlow()">+ Nueva Influencer</button>
   </div>
+
+  <!-- ── WORKSPACE ────────────────────────────────────────────────────────────── -->
+  <div id="workspace">
+    <h1>Crear Influencer <span class="badge">AION</span></h1>
+    <p class="subtitle">Configura el rostro de tu próxima modelo con IA.</p>
 
   <!-- ── CREAR INFLUENCER ────────────────────────────────────────────────────── -->
   <div id="create-section">
@@ -468,10 +732,14 @@
   <div class="deployment-id">
     AION: c6e6b7f0 &nbsp;|&nbsp; cuerpo: cabf22a3 &nbsp;|&nbsp; perfil: claude-sonnet-4-6 &nbsp;|&nbsp; fase 4: 8d4702cb
   </div>
-</div>
+  </div><!-- end workspace -->
+</div><!-- end container -->
 
 <script>
 const POLL_INTERVAL = 8000
+
+// ── Hero photo — pega aquí la URL de tu modelo hero ──────────────────────────
+const HERO_PHOTO_URL = 'https://comfy-deploy-output.s3.us-east-2.amazonaws.com/outputs/runs/0d64074a-92b0-4713-8ff8-41a91b832b76/ComfyUI_00001_.png'
 
 // ── AION params definition ────────────────────────────────────────────────────
 const AION_PARAMS = [
@@ -554,6 +822,7 @@ window.addEventListener('DOMContentLoaded', () => {
   buildParamsGrid()
   buildClaudeRefSlots()
   loadInfluencers()
+  if (HERO_PHOTO_URL) updateHeroPhoto(HERO_PHOTO_URL)
 })
 
 // ── Build UI components ───────────────────────────────────────────────────────
@@ -1532,6 +1801,22 @@ function escAttr(s) {
   return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
 }
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)) }
+
+// ── Landing Hero ──────────────────────────────────────────────────────────────
+function enterStudio() {
+  const hero = document.getElementById('landing-hero')
+  hero.classList.add('exit')
+  setTimeout(() => { hero.style.display = 'none' }, 520)
+}
+
+function updateHeroPhoto(url) {
+  if (!url) return
+  const img   = document.getElementById('hero-photo-img')
+  const empty = document.getElementById('hero-photo-empty')
+  img.src = url
+  img.style.display = 'block'
+  if (empty) empty.style.display = 'none'
+}
 </script>
 </body>
 </html>
