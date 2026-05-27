@@ -430,6 +430,7 @@
   .toggle-header { border-left: 3px solid transparent; transition: border-color 0.2s ease, background 0.15s; }
   .toggle-section:has(#switch-images.on) .toggle-header,
   .toggle-section:has(#switch-params.on) .toggle-header,
+  .toggle-section:has(#switch-body.on) .toggle-header,
   .toggle-section:has(#switch-prompt.on) .toggle-header { border-left-color: var(--c-accent); }
 
   /* ── Toggle switch ── */
@@ -755,15 +756,27 @@
           </div>
         </div>
 
-        <!-- Toggle B: Parámetros detallados -->
+        <!-- Toggle B: Parámetros de Rostro -->
         <div class="toggle-section">
           <div class="toggle-header" onclick="toggleSection('params')">
             <button class="toggle-switch" id="switch-params" onclick="event.stopPropagation();toggleSection('params')"></button>
-            <span class="toggle-label">Parámetros detallados</span>
-            <span class="toggle-hint" id="hint-params">58 parámetros — todos en auto</span>
+            <span class="toggle-label">Parámetros de Rostro</span>
+            <span class="toggle-hint" id="hint-params">43 parámetros — todos en auto</span>
           </div>
           <div class="toggle-body" id="body-params">
             <div id="params-grid"></div>
+          </div>
+        </div>
+
+        <!-- Toggle D: Parámetros de Cuerpo -->
+        <div class="toggle-section">
+          <div class="toggle-header" onclick="toggleSection('body')">
+            <button class="toggle-switch" id="switch-body" onclick="event.stopPropagation();toggleSection('body')"></button>
+            <span class="toggle-label">Parámetros de Cuerpo</span>
+            <span class="toggle-hint" id="hint-body">7 parámetros — todos en auto</span>
+          </div>
+          <div class="toggle-body" id="body-body">
+            <div id="body-params-grid"></div>
           </div>
         </div>
 
@@ -965,21 +978,18 @@ const AION_PARAMS = [
 ]
 
 const BODY_PARAMS = [
-  { name:'body_type',            label:'Tipo de cuerpo',    group:'Figura', options:['auto','hourglass','curvy and voluminous','athletic and toned','slim and lean','petite','tall and lean','fit and curvy','natural proportions'] },
-  { name:'height_build',         label:'Altura / Complexión', group:'Figura', options:["auto","petite build (5'1\"-5'3\")","average height (5'4\"-5'6\")","tall build (5'7\"-5'9\")","very tall (5'10\"+)"] },
-  { name:'bust_size',            label:'Busto',             group:'Busto / Cintura', options:['auto','small bust','medium bust','full bust','large bust','very large bust'] },
-  { name:'waist_definition',     label:'Cintura',           group:'Busto / Cintura', options:['auto','undefined waist','slightly defined waist','well-defined waist','very narrow waist','extreme hourglass waist'] },
-  { name:'shoulder_width',       label:'Hombros',           group:'Busto / Cintura', options:['auto','narrow shoulders','medium shoulders','broad shoulders','athletic shoulders'] },
-  { name:'hip_width',            label:'Caderas',           group:'Caderas / Glúteos', options:['auto','narrow hips','medium hips','wide hips','very wide hips'] },
-  { name:'glute_shape',          label:'Glúteos',           group:'Caderas / Glúteos', options:['auto','flat glutes','average glutes','round and full glutes','large and prominent glutes','perky and lifted glutes'] },
-  { name:'waist_hip_ratio',      label:'Ratio Cintura-Cadera', group:'Caderas / Glúteos', options:['auto','extreme hourglass (0.65-0.70)','classic hourglass (0.70-0.75)','soft curves (0.75-0.80)','straight silhouette (0.80+)'] },
-  { name:'thigh_shape',          label:'Muslos',            group:'Piernas', options:['auto','slim thighs','medium thighs','thick and full thighs','muscular thighs','inner thigh gap'] },
-  { name:'leg_length',           label:'Largo de piernas',  group:'Piernas', options:['auto','short legs','average leg length','long legs','very long legs'] },
-  { name:'leg_shape',            label:'Forma de piernas',  group:'Piernas', options:['auto','slim and straight legs','toned athletic legs','curvy and shapely legs','muscular defined legs'] },
-  { name:'calf_shape',           label:'Gemelos',           group:'Piernas', options:['auto','slim calves','average calves','defined calves','muscular calves'] },
-  { name:'body_skin_tone_match', label:'Continuidad piel',  group:'Piel corporal', options:['auto','perfect skin tone continuity from face','slightly lighter body skin','natural sun-kissed variation','uniform flawless skin tone'] },
-  { name:'body_skin_detail',     label:'Detalle de piel',   group:'Piel corporal', options:['auto','flawless smooth skin','natural subtle texture','light tan lines','natural skin grain and pores'] },
-  { name:'body_skin_reflection', label:'Reflexión de piel', group:'Piel corporal', options:['auto','matte natural skin','subtle natural sheen','soft dewy glow','satin skin finish'] },
+  // 7 params directos → AionBodyReferenceNode
+  { name:'body_type', label:'Tipo de cuerpo',  group:'Cuerpo', options:['auto','slim lean build','slim-athletic build','athletic toned build','hourglass figure','pear-shaped figure','curvy fuller figure','plus-size full build','petite frame','tall statuesque frame','muscular defined build'] },
+  { name:'bust',      label:'Busto',           group:'Cuerpo', options:['auto','flat chest','small bust','moderate bust','full bust','large bust','extra large bust','extremely large bust exaggerated proportions','hyper-voluminous bust fantasy proportions','massive oversized bust ultra-exaggerated'] },
+  { name:'waist',     label:'Cintura',         group:'Cuerpo', options:['auto','very narrow waist extreme hourglass','narrow defined waist','moderate waist','straight waist','full waist'] },
+  { name:'glutes',    label:'Glúteos',         group:'Cuerpo', options:['auto','flat glutes','small glutes','moderate rounded glutes','full prominent glutes','large voluminous glutes','extra large glutes exaggerated proportions','extremely large glutes hyper-voluminous rear','massive oversized glutes ultra-exaggerated'] },
+  { name:'hips',      label:'Caderas',         group:'Cuerpo', options:['auto','narrow hips','balanced proportionate hips','wide hips','very wide hips','full rounded hips exaggerated width'] },
+  { name:'legs',      label:'Piernas',         group:'Cuerpo', options:['auto','long lean legs','slim legs','athletic legs defined quads','full thick thighs','muscular legs','wide thighs full legs'] },
+  { name:'shoulders', label:'Hombros',         group:'Cuerpo', options:['auto','narrow shoulders','proportionate shoulders','broad shoulders','sloped shoulders','square shoulders'] },
+  // Calidad del motor de cuerpo
+  { name:'body_model',       label:'Modelo IA',       group:'Calidad cuerpo', options:['gemini-3.1-pro-preview','gemini-3-flash-preview','gemini-2.5-pro','gemini-2.5-flash'] },
+  { name:'body_image_model', label:'Image model',     group:'Calidad cuerpo', options:['Nano Banana Pro (gemini-3-pro-image-preview)','Nano Banana 2 (gemini-3.1-flash-image-preview)'] },
+  { name:'body_resolution',  label:'Resolución',      group:'Calidad cuerpo', options:['512px','1K','2K','4K'] },
 ]
 
 const IMAGE_SLOTS = [
@@ -1003,7 +1013,7 @@ let currentContentPlan    = null
 let lastContentRunId      = null   // guardado para poder recuperar imágenes si hay timeout
 
 // Toggle state
-const sectionState = { images: false, params: false, prompt: false }
+const sectionState = { images: false, params: false, body: false, prompt: false }
 
 // Image URLs (filled by upload)
 const uploadedImages = {}
@@ -1016,6 +1026,7 @@ let claudeRefImages = []  // array of { type, data: base64 } — for Claude only
 window.addEventListener('DOMContentLoaded', () => {
   buildImageSlots()
   buildParamsGrid()
+  buildBodyParamsGrid()
   buildClaudeRefSlots()
   loadInfluencers()
   if (HERO_PHOTO_URL) updateHeroPhoto(HERO_PHOTO_URL)
@@ -1077,18 +1088,35 @@ function buildParamGroupsInto(container, paramList, idPrefix) {
 function buildParamsGrid() {
   const container = document.getElementById('params-grid')
   container.innerHTML = ''
-
   buildParamGroupsInto(container, AION_PARAMS, 'param-')
+}
 
-  const divider = document.createElement('div')
-  divider.style.cssText = 'border-top:1px solid #2a2a2a;margin:16px 0 8px;'
-  const bodyTitle = document.createElement('div')
-  bodyTitle.style.cssText = 'font-size:0.65rem;font-weight:700;letter-spacing:.12em;color:#C8FF00;text-transform:uppercase;margin-bottom:8px'
-  bodyTitle.textContent = '— BODY PARAMS —'
-  container.appendChild(divider)
-  container.appendChild(bodyTitle)
+function buildBodyParamsGrid() {
+  const container = document.getElementById('body-params-grid')
+  if (!container) return
+  container.innerHTML = ''
 
-  buildParamGroupsInto(container, BODY_PARAMS, 'bodyparam-')
+  const bodyOnlyParams = BODY_PARAMS.filter(p => p.group === 'Cuerpo')
+  const qualityParams  = BODY_PARAMS.filter(p => p.group === 'Calidad cuerpo')
+
+  buildParamGroupsInto(container, bodyOnlyParams, 'bodyparam-')
+
+  const descWrap = document.createElement('div')
+  descWrap.style.cssText = 'margin-top:12px;padding:12px;background:#0d0d0d;border:1px solid #2a2a2a;border-radius:10px'
+  descWrap.innerHTML = `
+    <label style="display:block;font-size:0.72rem;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Descripción libre del cuerpo (opcional)</label>
+    <textarea id="body-description" placeholder="Ej: súper curvy, trasero muy grande, cintura definida..." rows="2" style="width:100%;background:#111;border:1px solid #2a2a2a;border-radius:8px;color:#e8e8e8;font-size:0.85rem;padding:9px 12px;font-family:inherit;outline:none;resize:vertical;line-height:1.4;transition:border-color .15s" onfocus="this.style.borderColor='#C8FF00'" onblur="this.style.borderColor='#2a2a2a'"></textarea>
+  `
+  container.appendChild(descWrap)
+
+  const qualDiv = document.createElement('div')
+  qualDiv.style.cssText = 'margin-top:12px;padding:12px;background:#0d0d0d;border:1px solid #2a2a2a;border-radius:10px'
+  const qualTitle = document.createElement('div')
+  qualTitle.style.cssText = 'font-size:0.65rem;font-weight:700;letter-spacing:.12em;color:#555;text-transform:uppercase;margin-bottom:8px'
+  qualTitle.textContent = '— CALIDAD DEL MOTOR —'
+  qualDiv.appendChild(qualTitle)
+  buildParamGroupsInto(qualDiv, qualityParams, 'bodyparam-')
+  container.appendChild(qualDiv)
 }
 
 // ── Toggle sections ───────────────────────────────────────────────────────────
@@ -1110,13 +1138,17 @@ function updateParamHint() {
     const el = document.getElementById(`param-${p.name}`)
     return el && el.value !== 'auto'
   }).length
-  const bodyCount = BODY_PARAMS.filter(p => {
+  document.getElementById('hint-params').textContent =
+    faceCount > 0 ? `${faceCount} param(s) activo(s)` : '43 parámetros — todos en auto'
+
+  const bodyOnlyParams = BODY_PARAMS.filter(p => p.group === 'Cuerpo')
+  const bodyCount = bodyOnlyParams.filter(p => {
     const el = document.getElementById(`bodyparam-${p.name}`)
     return el && el.value !== 'auto'
   }).length
-  const total = faceCount + bodyCount
-  document.getElementById('hint-params').textContent =
-    total > 0 ? `${total} parámetro(s) seleccionado(s) (${faceCount} rostro, ${bodyCount} cuerpo)` : '58 parámetros — todos en auto'
+  const bodyHintEl = document.getElementById('hint-body')
+  if (bodyHintEl) bodyHintEl.textContent =
+    bodyCount > 0 ? `${bodyCount} param(s) activo(s)` : '7 parámetros — todos en auto'
 }
 
 function updateImageHint() {
@@ -1193,6 +1225,9 @@ function getAionInputs() {
     params:           {},
     body_params:      {},
     body_description: '',
+    body_model:       'gemini-3.1-pro-preview',
+    body_image_model: 'Nano Banana Pro (gemini-3-pro-image-preview)',
+    body_resolution:  '512px',
     prompt:           '',
   }
 
@@ -1207,10 +1242,20 @@ function getAionInputs() {
       const el = document.getElementById(`param-${p.name}`)
       if (el) inputs.params[p.name] = el.value
     }
+  }
+
+  if (sectionState.body) {
     for (const p of BODY_PARAMS) {
       const el = document.getElementById(`bodyparam-${p.name}`)
-      if (el && el.value !== 'auto') inputs.body_params[p.name] = el.value
+      if (!el) continue
+      if (p.group === 'Calidad cuerpo') {
+        inputs[p.name] = el.value
+      } else if (el.value !== 'auto') {
+        inputs.body_params[p.name] = el.value
+      }
     }
+    const descEl = document.getElementById('body-description')
+    if (descEl) inputs.body_description = descEl.value.trim()
   }
 
   if (sectionState.prompt) {

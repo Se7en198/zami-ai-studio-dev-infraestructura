@@ -32,7 +32,7 @@ loadEnv()
 const API_KEY               = process.env.VITE_COMFYDEPLOY_API_KEY || ''
 const ANTHROPIC_KEY         = process.env.ANTHROPIC_API_KEY || ''
 const ANTHROPIC_MODEL       = process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-6'
-const DEPLOYMENT_ID_AION    = process.env.VITE_COMFYDEPLOY_AION_DEPLOYMENT_ID || 'c6e6b7f0-e574-4aa8-9012-54e8507202e2'
+const DEPLOYMENT_ID_AION    = process.env.VITE_COMFYDEPLOY_AION_DEPLOYMENT_ID || 'e833a575-893b-49f2-8687-4aa5291d31cc'
 const DEPLOYMENT_ID_BODY    = process.env.VITE_COMFYDEPLOY_BODY_DEPLOYMENT_ID || 'cabf22a3-a697-485c-a6df-b6c09ee4f2f1'
 const DEPLOYMENT_ID_CONTENT = 'f9822b81-9ebc-48e2-b39c-0e8034e90554'  // Fase 4 UGC — ComfyDeploy (14 slots)
 const SUPABASE_URL          = process.env.VITE_SUPABASE_URL || ''
@@ -518,95 +518,19 @@ slot1=9:16, slot2=9:16, slot3=1:1, slot4=1:1, slot5=3:4, slot6=4:5, slot7=1:1, s
   })
 }
 
-// ── AION Body Params ─────────────────────────────────────────────────────────
+// ── AION Body Params (AionBodyReferenceNode — 7 direct enums) ────────────────
 const BODY_PARAM_OPTIONS = {
-  body_type:            ['hourglass','curvy and voluminous','athletic and toned','slim and lean','petite','tall and lean','fit and curvy','natural proportions'],
-  height_build:         ["petite build (5'1\"-5'3\")","average height (5'4\"-5'6\")","tall build (5'7\"-5'9\")","very tall (5'10\"+)"],
-  bust_size:            ['small bust','medium bust','full bust','large bust','very large bust'],
-  waist_definition:     ['undefined waist','slightly defined waist','well-defined waist','very narrow waist','extreme hourglass waist'],
-  shoulder_width:       ['narrow shoulders','medium shoulders','broad shoulders','athletic shoulders'],
-  hip_width:            ['narrow hips','medium hips','wide hips','very wide hips'],
-  glute_shape:          ['flat glutes','average glutes','round and full glutes','large and prominent glutes','perky and lifted glutes'],
-  waist_hip_ratio:      ['extreme hourglass (0.65-0.70)','classic hourglass (0.70-0.75)','soft curves (0.75-0.80)','straight silhouette (0.80+)'],
-  thigh_shape:          ['slim thighs','medium thighs','thick and full thighs','muscular thighs','inner thigh gap'],
-  leg_length:           ['short legs','average leg length','long legs','very long legs'],
-  leg_shape:            ['slim and straight legs','toned athletic legs','curvy and shapely legs','muscular defined legs'],
-  calf_shape:           ['slim calves','average calves','defined calves','muscular calves'],
-  body_skin_tone_match: ['perfect skin tone continuity from face','slightly lighter body skin','natural sun-kissed variation','uniform flawless skin tone'],
-  body_skin_detail:     ['flawless smooth skin','natural subtle texture','light tan lines','natural skin grain and pores'],
-  body_skin_reflection: ['matte natural skin','subtle natural sheen','soft dewy glow','satin skin finish'],
+  body_type: ['auto','slim lean build','slim-athletic build','athletic toned build','hourglass figure','pear-shaped figure','curvy fuller figure','plus-size full build','petite frame','tall statuesque frame','muscular defined build'],
+  bust:      ['auto','flat chest','small bust','moderate bust','full bust','large bust','extra large bust','extremely large bust exaggerated proportions','hyper-voluminous bust fantasy proportions','massive oversized bust ultra-exaggerated'],
+  waist:     ['auto','very narrow waist extreme hourglass','narrow defined waist','moderate waist','straight waist','full waist'],
+  glutes:    ['auto','flat glutes','small glutes','moderate rounded glutes','full prominent glutes','large voluminous glutes','extra large glutes exaggerated proportions','extremely large glutes hyper-voluminous rear','massive oversized glutes ultra-exaggerated'],
+  hips:      ['auto','narrow hips','balanced proportionate hips','wide hips','very wide hips','full rounded hips exaggerated width'],
+  legs:      ['auto','long lean legs','slim legs','athletic legs defined quads','full thick thighs','muscular legs','wide thighs full legs'],
+  shoulders: ['auto','narrow shoulders','proportionate shoulders','broad shoulders','sloped shoulders','square shoulders'],
 }
-
-const BODY_EXPERT_SYSTEM_PROMPT = `You are a precision body prompt engineer for Gemini image generation. You receive body parameters and output a single English prompt that controls the full-body image.
-
-MANDATORY VISUAL RULES — non-negotiable:
-- Pure white background (#FFFFFF), seamless high-key studio lighting, zero shadows, zero context
-- Full body standing shot, head-to-toe, perfectly centered, straight-on or slight 3/4 angle
-- Outfit: white form-fitting leggings + white cropped athletic top — extremely body-hugging, accentuating every curve. No patterns, no accessories. The outfit exists only to reveal body proportions.
-- Hyperrealistic photography: 8K, sharp focus, ultra-detailed skin texture, RAW photo quality
-
-PROMPT CONSTRUCTION ORDER:
-0. ALWAYS open with: "Using the provided reference portrait as the exact face and identity, generate a hyperrealistic full-body photograph of this same woman. Preserve all facial features exactly as shown in the reference image."
-1. Height and overall build (1 sentence: height_build + body_type)
-2. Upper body: shoulder width, bust size, waist definition (exact params → anatomical descriptors)
-3. Lower body: waist_hip_ratio, hip width, glute shape, thigh shape, leg length, leg shape, calf shape
-4. Skin: body_skin_tone_match, body_skin_detail, body_skin_reflection
-
-STRICT RULES:
-- Translate each parameter into a concrete anatomical descriptor
-- NO face description beyond the opening reference directive, NO hair, NO background beyond pure white studio
-- NO scene, NO location, NO props
-- All influencers are strikingly alluring, magnetic, and aspirational — magazine editorial quality
-- 120–150 words MAX
-- Output ONLY the prompt text. No markdown, no labels, no explanations.
-- NEVER use: nude, naked, revealing, sensual, erotic, explicit — Gemini will block these`
-
-async function generateBodyPromptFromParams(nombre, nicho, bodyParams, bodyDescription) {
-  const paramLines = Object.entries(BODY_PARAM_OPTIONS)
-    .map(([k, opts]) => {
-      const val = bodyParams && bodyParams[k] ? bodyParams[k] : opts[0]
-      return `${k}: "${val}"`
-    })
-    .join('\n')
-
-  const descLine = bodyDescription ? `\nAdditional body context from user: "${bodyDescription}"` : ''
-  const userMsg = `Influencer name: ${nombre}\nNiche: ${nicho}${descLine}\n\nSelected body parameters:\n${paramLines}`
-
-  const payload = JSON.stringify({
-    model:      ANTHROPIC_MODEL,
-    max_tokens: 300,
-    system:     BODY_EXPERT_SYSTEM_PROMPT,
-    messages:   [{ role: 'user', content: userMsg }],
-  })
-
-  return new Promise((resolve, reject) => {
-    const opts = {
-      hostname: 'api.anthropic.com',
-      path:     '/v1/messages',
-      method:   'POST',
-      headers: {
-        'x-api-key':         ANTHROPIC_KEY,
-        'anthropic-version': '2023-06-01',
-        'content-type':      'application/json',
-        'content-length':    Buffer.byteLength(payload),
-      },
-    }
-    const req = https.request(opts, res => {
-      let raw = ''
-      res.on('data', d => raw += d)
-      res.on('end', () => {
-        try {
-          const data = JSON.parse(raw)
-          if (res.statusCode !== 200) throw new Error(`Anthropic ${res.statusCode}: ${JSON.stringify(data)}`)
-          resolve(data.content[0].text.trim())
-        } catch (e) { reject(e) }
-      })
-    })
-    req.on('error', reject)
-    req.write(payload)
-    req.end()
-  })
-}
+const BODY_MODEL_OPTIONS      = ['gemini-3.1-pro-preview','gemini-3-flash-preview','gemini-2.5-pro','gemini-2.5-flash']
+const BODY_IMAGE_MODEL_OPTIONS = ['Nano Banana Pro (gemini-3-pro-image-preview)','Nano Banana 2 (gemini-3.1-flash-image-preview)']
+const BODY_RESOLUTION_OPTIONS  = ['512px','1K','2K','4K']
 
 // ── AION Expert Params — Claude selects from natural language ────────────────
 const AION_EXPERT_SYSTEM_PROMPT = `You are AION Casting Director, a world-class expert in creating hyperrealistic virtual influencer faces for AI image generation workflows.
@@ -668,19 +592,40 @@ under_eye: ["auto","none","mild dark circles","deep dark circles","puffy under-e
 expression: ["auto","neutral","happiness","sadness","anger","surprise","fear","disgust","contempt"]
 expression_variant: ["auto","Duchenne smile","social smile","bitter smile","coy smile","broad grin","closed-lip smile","smirk","radiant joy","gentle warmth","laughing","tearful","melancholic gaze","lip tremble","downcast eyes","subtle grief","resigned sadness","nostalgic sadness","holding back tears","cold fury","simmering rage","tight jaw anger","flared nostrils anger","stern disapproval","controlled anger","frustrated scowl","indignant look","wide-eyed shock","mild surprise","open-mouth gasp","raised brows surprise","stunned disbelief","pleasant surprise","startled","wide-eyed fear","frozen terror","anxious worry","nervous tension","subtle unease","panicked expression","deer-in-headlights","mild distaste","strong revulsion","nose wrinkle disgust","lip curl disgust","nauseated look","subtle aversion","one-sided smirk","dismissive look","superior gaze","subtle disdain","eye-roll contempt","sardonic expression","serene neutral","pensive","stoic","blank stare","composed calm","thoughtful gaze","distant look","wistful","determined"]
 
+BODY PARAMETERS — also select these 7 fields based on the influencer description and niche. Use ONLY these exact strings:
+body_type: ["auto","slim lean build","slim-athletic build","athletic toned build","hourglass figure","pear-shaped figure","curvy fuller figure","plus-size full build","petite frame","tall statuesque frame","muscular defined build"]
+bust: ["auto","flat chest","small bust","moderate bust","full bust","large bust","extra large bust","extremely large bust exaggerated proportions","hyper-voluminous bust fantasy proportions","massive oversized bust ultra-exaggerated"]
+waist: ["auto","very narrow waist extreme hourglass","narrow defined waist","moderate waist","straight waist","full waist"]
+glutes: ["auto","flat glutes","small glutes","moderate rounded glutes","full prominent glutes","large voluminous glutes","extra large glutes exaggerated proportions","extremely large glutes hyper-voluminous rear","massive oversized glutes ultra-exaggerated"]
+hips: ["auto","narrow hips","balanced proportionate hips","wide hips","very wide hips","full rounded hips exaggerated width"]
+legs: ["auto","long lean legs","slim legs","athletic legs defined quads","full thick thighs","muscular legs","wide thighs full legs"]
+shoulders: ["auto","narrow shoulders","proportionate shoulders","broad shoulders","sloped shoulders","square shoulders"]
+
+BODY SELECTION RULES:
+- NEVER use "auto" for body params — always pick the best value for the niche
+- Niche inference: fitness/sport=athletic toned build+full bust+narrow defined waist; gamer/alt=curvy fuller figure+full bust+moderate waist; fashion/luxury=hourglass figure+full bust+very narrow waist; lifestyle=slim-athletic build; curvy niche=curvy fuller figure+large bust+wide hips+full prominent glutes
+
+INTENSITY MAPPING — scale enum choice to match the intensity of the user's language:
+- EXTREME words (súper, muy, enorme, ultra, exagerado, massive, huge, enormous, gigantic, oversized, hyper, máximo, grandísimo, XXL, ridiculously, beyond natural, demasiado, extremo):
+    bust → "massive oversized bust ultra-exaggerated" or "hyper-voluminous bust fantasy proportions"
+    glutes → "massive oversized glutes ultra-exaggerated" or "extremely large glutes hyper-voluminous rear"
+    hips → "full rounded hips exaggerated width"
+    waist (curvy context) → "very narrow waist extreme hourglass"
+- HIGH words (grande, big, prominente, voluminoso, curvy, pronounced, significant, ample, notable, well-developed):
+    bust → "extra large bust" or "extremely large bust exaggerated proportions"
+    glutes → "extra large glutes exaggerated proportions"
+    hips → "very wide hips"
+- MODERATE words (medium, average, normal, moderado, regular, balanced, natural):
+    use mid-range options for all params
+- When extreme or high intensity proportions are requested, ALSO reinforce them explicitly in "prompt_body":
+    e.g. "Dramatically voluminous bust and hyper-developed glutes, ultra-wide hips creating maximum curvature, extreme hourglass silhouette with striking proportions."
+
 OUTPUT RULES:
 - Return ONLY a valid JSON object — no markdown, no code blocks, no explanation, no extra text
-- Include ALL 43 face parameters PLUS the "prompt_body" field (44 fields total)
-- Use ONLY the exact string values listed above for face params
-- "prompt_body": a 150–250 word English prompt for Gemini image generation. MUST follow this structure EXACTLY:
-  1. ALWAYS start with: "Using the provided reference portrait as the exact face and identity, generate a hyperrealistic full-body photograph of this same woman. Preserve all facial features exactly as in the reference."
-  2. Body proportions inferred from ethnicity/build + niche (fitness=athletic/sculpted, gamer=soft curvy, fashion=hourglass, luxury=tall statuesque)
-  3. Outfit: white form-fitting leggings + white cropped athletic top, extremely body-hugging — accentuates every curve. Elegant and aspirational.
-  4. Pose: confident, commanding, alluring — magazine editorial quality
-  5. Setting: pure white seamless background (#FFFFFF), high-key studio lighting, zero shadows
-  6. Technical: "full body shot, fashion photography, Sony A7R V, 35mm lens, 8K, hyperrealistic, ultra-detailed, RAW photo"
-  Skin tone of body must match face skin_tone param. NEVER use: nude, naked, revealing, sensual, erotic, sexy — use instead: alluring, captivating, magnetic, aspirational, striking.
-- Example: {"sex":"female","ethnicity":"Latin American","eye_shape":"almond-shaped",...,"prompt_body":"Using the provided reference portrait as the exact face and identity, generate a hyperrealistic full-body photograph of this same woman..."}`
+- Include ALL 43 face parameters + 7 body parameters + "prompt_body" field (51 fields total)
+- Use ONLY the exact string values listed above for face and body params
+- "prompt_body": a 60–100 word English supplementary description for additional body detail (skin quality, posture, overall aesthetic). NEVER use: nude, naked, revealing, sensual, erotic, sexy — use instead: alluring, captivating, magnetic, aspirational, striking.
+- Example: {"sex":"female","ethnicity":"Latin American","eye_shape":"almond-shaped",...,"body_type":"hourglass figure","bust":"full bust","waist":"narrow defined waist","glutes":"full prominent glutes","hips":"wide hips","legs":"long lean legs","shoulders":"proportionate shoulders","prompt_body":"Smooth tan skin with subtle natural texture, confident upright posture, editorial magazine quality, aspirational athletic build."}`
 
 async function generateAionParams(description, referenceImages, photoType, nombre, nicho) {
   const content = []
@@ -701,7 +646,7 @@ async function generateAionParams(description, referenceImages, photoType, nombr
 
   const payload = JSON.stringify({
     model: ANTHROPIC_MODEL,
-    max_tokens: 1500,
+    max_tokens: 2000,
     system: AION_EXPERT_SYSTEM_PROMPT,
     messages: [{ role: 'user', content }],
   })
@@ -907,15 +852,20 @@ const server = http.createServer(async (req, res) => {
     return
   }
 
-  // POST /api/generate-face — AION face generation with images, params, and/or prompt
+  // POST /api/generate-face — AION face + AionBodyReferenceNode (run unificado)
   if (req.method === 'POST' && pathname === '/api/generate-face') {
     try {
       const body   = await readBody(req)
       const inputs = {}
 
-      inputs['photo_type']   = body.photo_type || '-- Not selected / System inferred --'
-      inputs['imagen final'] = 'Nano Banana Pro'
-      inputs['save_image']   = 'ComfyUI'
+      inputs['photo_type']    = body.photo_type || '-- Not selected / System inferred --'
+      inputs['imagen rostro'] = 'Nano Banana Pro'
+      inputs['save_image']    = 'ComfyUI'
+
+      // Body quality params (AionBodyReferenceNode model/resolution)
+      inputs['model']       = body.body_model       || 'gemini-3.1-pro-preview'
+      inputs['image_model'] = body.body_image_model || 'Nano Banana Pro (gemini-3-pro-image-preview)'
+      inputs['resolution']  = body.body_resolution  || '512px'
 
       if (body.prompt && body.prompt.trim()) {
         inputs['prompt'] = body.prompt.trim()
@@ -935,27 +885,28 @@ const server = http.createServer(async (req, res) => {
         }
       }
 
-      const nombre          = (body.nombre || '').trim()
-      const nicho           = (body.nicho  || '').trim()
-      const hasBodyParams   = body.body_params && Object.keys(body.body_params).length > 0
-      const hasBodyDesc     = body.body_description && body.body_description.trim()
-
-      let promptBody = null
-      if ((hasBodyParams || hasBodyDesc) && ANTHROPIC_KEY) {
-        console.log(`\n[GENERATE-FACE] Generating prompt_body via Claude...`)
-        promptBody = await generateBodyPromptFromParams(nombre || 'influencer', nicho || 'lifestyle', body.body_params || {}, body.body_description || '')
-        console.log(`  prompt_body (${promptBody.length} chars): ${promptBody.slice(0, 100)}...`)
+      // 7 direct body enum params — pass if not 'auto'
+      if (body.body_params) {
+        const allowedBodyKeys = new Set(Object.keys(BODY_PARAM_OPTIONS))
+        for (const [key, val] of Object.entries(body.body_params)) {
+          if (allowedBodyKeys.has(key) && val && val !== 'auto') inputs[key] = val
+        }
       }
-      if (promptBody) inputs['prompt_body'] = promptBody
+
+      // body_description passed directly as brief_text (no Claude processing needed)
+      if (body.body_description && body.body_description.trim()) {
+        inputs['prompt_body'] = body.body_description.trim()
+      }
 
       const imgCount   = Object.keys(body.images  || {}).filter(k => (body.images  || {})[k]).length
       const paramCount = Object.keys(body.params  || {}).filter(k => { const v = (body.params || {})[k]; return v && v !== 'auto' && v !== '-- Not selected / System inferred --' }).length
-      console.log(`\n[GENERATE-FACE] photo_type="${inputs['photo_type']}" images=${imgCount} custom_params=${paramCount} prompt=${!!inputs['prompt']} prompt_body=${!!promptBody}`)
+      const bodyCount  = Object.keys(body.body_params || {}).filter(k => { const v = (body.body_params || {})[k]; return v && v !== 'auto' }).length
+      console.log(`\n[GENERATE-FACE] photo_type="${inputs['photo_type']}" images=${imgCount} face_params=${paramCount} body_params=${bodyCount} prompt_body=${!!inputs['prompt_body']} model="${inputs['model']}" res="${inputs['resolution']}"`)
 
       const runId = await startAionRun(inputs)
       console.log(`  run: ${runId}`)
 
-      json(res, 200, { runId, prompt_body: promptBody || null })
+      json(res, 200, { runId, prompt_body: inputs['prompt_body'] || null })
     } catch (err) {
       console.error('[GENERATE-FACE ERROR]', err.message)
       fail(res, err)
@@ -985,23 +936,38 @@ const server = http.createServer(async (req, res) => {
       console.log(`\n[CLAUDE-GUIDED] desc="${description.slice(0, 80)}..." refImages=${refImages.filter(Boolean).length} photoType="${photoType}" nicho="${nicho}"`)
 
       const allParams = await generateAionParams(description, refImages, photoType, nombre, nicho)
-      const { prompt_body: promptBody, ...faceParams } = allParams
-      console.log(`  Claude seleccionó ${Object.keys(faceParams).length} face params, prompt_body=${promptBody ? promptBody.length + ' chars' : 'none'}`)
+      const bodyParamKeys = new Set(Object.keys(BODY_PARAM_OPTIONS))
+      const { prompt_body: promptBody, ...restParams } = allParams
+      const bodyParams = {}
+      const faceParams = {}
+      for (const [k, v] of Object.entries(restParams)) {
+        if (bodyParamKeys.has(k)) bodyParams[k] = v
+        else faceParams[k] = v
+      }
+      console.log(`  Claude seleccionó ${Object.keys(faceParams).length} face params + ${Object.keys(bodyParams).length} body params, prompt_body=${promptBody ? promptBody.length + ' chars' : 'none'}`)
       console.log('  Selected face params:', JSON.stringify(faceParams, null, 2))
+      console.log('  Selected body params:', JSON.stringify(bodyParams, null, 2))
       if (promptBody) console.log('  prompt_body:', promptBody.slice(0, 120) + '...')
 
       const inputs = {
-        'photo_type':   photoType,
-        'imagen final': 'Nano Banana Pro',
-        'save_image':   'ComfyUI',
+        'photo_type':    photoType,
+        'imagen rostro': 'Nano Banana Pro',
+        'save_image':    'ComfyUI',
+        'model':         'gemini-3.1-pro-preview',
+        'image_model':   'Nano Banana Pro (gemini-3-pro-image-preview)',
+        'resolution':    '512px',
         ...faceParams,
+      }
+      // 7 direct body enum params — pass if not 'auto'
+      for (const [k, v] of Object.entries(bodyParams)) {
+        if (v && v !== 'auto') inputs[k] = v
       }
       if (promptBody) inputs['prompt_body'] = promptBody
 
       const runId = await startAionRun(inputs)
       console.log(`  run: ${runId}`)
 
-      json(res, 200, { runId, selected_params: faceParams, prompt_body: promptBody || null })
+      json(res, 200, { runId, selected_params: { ...faceParams, ...bodyParams }, prompt_body: promptBody || null })
     } catch (err) {
       console.error('[CLAUDE-GUIDED ERROR]', err.message)
       fail(res, err)
