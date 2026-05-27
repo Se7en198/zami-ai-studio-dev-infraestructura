@@ -237,14 +237,17 @@ async function generatePersona(nombre, nicho, faceUrl, bodyUrl) {
   if (bodyUrl) content.push({ type: 'image', source: { type: 'url', url: bodyUrl } })
   content.push({ type: 'text', text: `Eres un experto en crear perfiles de influencers virtuales para redes sociales y contenido digital.
 
+REGLA FÍSICA CRÍTICA — NO NEGOCIABLE:
+Para TODO lo relacionado con apariencia física (rasgos distintivos, lunares, pecas, tatuajes, piercings, cicatrices, marcas de nacimiento), describe ÚNICAMENTE lo que puedas confirmar claramente en las imágenes adjuntas. Si no lo ves con certeza → escribe "No visible". NUNCA inventes rasgos físicos que no estén claramente presentes en las imágenes. El resto de campos (vida, gustos, personalidad, hobbies, historia) SÍ son creativos — invéntale una vida completa, rica y aspiracional.
+
 Datos del personaje:
 - Nombre artístico: ${nombre}
 - Nicho de contenido: ${nicho}
 
-${faceUrl ? 'Te adjunto la imagen del ROSTRO — úsala para describir con precisión: color de ojos, tono de piel, color y estilo de cabello, rasgos distintivos (lunares, pecas, etc.).' : ''}
-${bodyUrl ? 'Te adjunto la imagen del CUERPO — úsala para describir: altura estimada, constitución física y cualquier rasgo visible.' : ''}
+${faceUrl ? 'Te adjunto la imagen del ROSTRO — úsala para describir: color de ojos, tono de piel, color y estilo de cabello. Para rasgos distintivos (lunares, pecas): SOLO si son claramente visibles en la imagen; si no, escribe "Ninguno visible".' : ''}
+${bodyUrl ? 'Te adjunto la imagen del CUERPO — úsala para describir: altura estimada, constitución física y cualquier rasgo claramente visible.' : ''}
 
-Llena CADA campo de forma creativa, específica y coherente con el nicho y las imágenes. Hazla carismática, única y atractiva. Responde TODO en español. Escribe SOLO el template llenado, sin comentarios adicionales.
+Llena CADA campo de forma creativa, específica y coherente con el nicho y las imágenes. Hazla carismática, única, atractiva y SEXY — ella es una influencer aspiracional, magnética, siempre bella y poderosa en su imagen. Responde TODO en español. Escribe SOLO el template llenado, sin comentarios adicionales.
 
 💎 AI PERSONA TEMPLATE 💋
 
@@ -263,7 +266,7 @@ Talla de zapatos: ___
 Color/Estilo de cabello: ___
 Color de ojos: ___
 Tono de piel: ___
-Rasgos Distintivos (lunares, pecas, etc.): ___
+Rasgos Distintivos (lunares, pecas, etc.): ___ (Solo si claramente visible en imágenes — si no: "Ninguno visible")
 
 🌍 Origen & Ubicación
 Etnicidad: ___
@@ -309,11 +312,12 @@ Nicho: ${nicho}
 Estilo de representación (glam, chica de al lado, dominante, etc.): ___
 Temas recurrentes: ___
 Lo que más les gusta a sus fans: ___
+Nivel de sensualidad del contenido: Siempre presente — outfits que marcan curvas, poses confiadas y poderosas, siempre bella y magnética sin importar el nicho.
 
 🖋️ Modificaciones Corporales
-Tatuajes: ___
-Piercings: ___
-Cicatrices/Marcas de nacimiento: ___
+Tatuajes: ___ (Solo si claramente visible en imágenes — si no: "No visible")
+Piercings: ___ (Solo si claramente visible en imágenes — si no: "No visible")
+Cicatrices/Marcas de nacimiento: ___ (Solo si claramente visible en imágenes — si no: "No visible")
 
 🧠 Personalidad
 3 Palabras que la describen: ___ ___ ___
@@ -443,7 +447,7 @@ SLOTS Y SUS ASPECT RATIOS (fijos en el workflow — no puedes cambiarlos):
 - Slot 8: 4:5  → Feed portrait editorial (retrato secundario)
 
 Asigna el tipo de contenido al slot que mejor encaje con su formato.
-Stories/Reels → slots 1-2. Square/carrusel → slots 3,4,7. Portrait editorial → slots 6,8. Lifestyle → slot 5.
+Stories/Reels → slots 1-2. Square → slots 3,4,7. Portrait editorial → slots 6,8. Lifestyle → slot 5.
 
 REGLAS FOTOGRÁFICAS UGC (aplica en TODOS los prompts):
 - "Shot on iPhone 15 Pro" — NUNCA studio lights
@@ -911,6 +915,7 @@ const server = http.createServer(async (req, res) => {
 
       inputs['photo_type']   = body.photo_type || '-- Not selected / System inferred --'
       inputs['imagen final'] = 'Nano Banana Pro'
+      inputs['save_image']   = 'ComfyUI'
 
       if (body.prompt && body.prompt.trim()) {
         inputs['prompt'] = body.prompt.trim()
@@ -988,6 +993,7 @@ const server = http.createServer(async (req, res) => {
       const inputs = {
         'photo_type':   photoType,
         'imagen final': 'Nano Banana Pro',
+        'save_image':   'ComfyUI',
         ...faceParams,
       }
       if (promptBody) inputs['prompt_body'] = promptBody
