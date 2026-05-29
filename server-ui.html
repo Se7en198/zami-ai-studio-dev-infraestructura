@@ -1437,7 +1437,7 @@ async function generateWithClaude() {
     // ── Paso 4: Perfil AI Persona
     setStep(4, 'active', 'Claude generando perfil completo... (~30 seg)')
     const r4 = await apiFetch('/api/generate-persona', { nombre, nicho, face_url: generatedFaceUrl, body_url: generatedBodyUrl })
-    generatedPersonaText = r4.persona
+    generatedPersonaText = Array.isArray(r4.persona) ? personaToText(r4.persona) : (r4.persona || '')
     renderPersona(r4.persona, nombre, nicho)
     setStep(4, 'done', `Perfil de ${nombre} listo`)
 
@@ -1452,7 +1452,7 @@ async function generateWithClaude() {
     document.getElementById('btn-generate-plan').disabled = false
     setContentPlanStatus('Listo. Clic en "Generar Plan Semanal" para comenzar.')
 
-    document.getElementById('result-section').scrollIntoView({ behavior: 'smooth', block: 'start' })
+    document.getElementById('persona-output').scrollIntoView({ behavior: 'smooth', block: 'start' })
   } catch (err) {
     console.error(err)
     for (let i = 1; i <= 4; i++) {
@@ -1631,7 +1631,7 @@ async function generateAll() {
     // ── Paso 4: Perfil AI Persona ────────────────────────
     setStep(4, 'active', 'Claude generando perfil completo... (~30 seg)')
     const r4 = await apiFetch('/api/generate-persona', { nombre, nicho, face_url: generatedFaceUrl, body_url: generatedBodyUrl })
-    generatedPersonaText = r4.persona
+    generatedPersonaText = Array.isArray(r4.persona) ? personaToText(r4.persona) : (r4.persona || '')
     renderPersona(r4.persona, nombre, nicho)
     setStep(4, 'done', `Perfil de ${nombre} listo`)
 
@@ -1646,7 +1646,7 @@ async function generateAll() {
     document.getElementById('btn-generate-plan').disabled = false
     setContentPlanStatus('Listo. Clic en "Generar Plan Semanal" para comenzar.')
 
-    document.getElementById('result-section').scrollIntoView({ behavior: 'smooth', block: 'start' })
+    document.getElementById('persona-output').scrollIntoView({ behavior: 'smooth', block: 'start' })
   } catch (err) {
     console.error(err)
     for (let i = 1; i <= 4; i++) {
@@ -1740,11 +1740,17 @@ async function saveCurrentInfluencer() {
 }
 
 // ── Persona rendering ─────────────────────────────────────────────────────────
+function personaToText(sections) {
+  return sections.map(s =>
+    `${s.title}\n${s.fields.map(f => f.key ? `${f.key}: ${f.val}` : `- ${f.val}`).join('\n')}`
+  ).join('\n\n')
+}
+
 function parsePersona(text) {
   const sections = []
   let current = null
   for (const raw of text.split('\n')) {
-    const line = raw.trim()
+    const line = raw.trim().replace(/\*\*/g, '').replace(/️/g, '')
     if (!line) continue
     const isHeader = /^[💎📛📏🌍🐾🍣🎵🎬💫📲🔥🧷🖋️🧠]/.test(line) && !line.includes(':')
     if (isHeader) {
@@ -1763,8 +1769,9 @@ function parsePersona(text) {
   return sections
 }
 
-function renderPersona(text, nombre, nicho) {
-  const sections = parsePersona(text)
+function renderPersona(personaData, nombre, nicho) {
+  const sections = Array.isArray(personaData) ? personaData : parsePersona(personaData)
+  const text = Array.isArray(personaData) ? personaToText(personaData) : personaData
   const aliasS   = sections.find(s => /Alias/i.test(s.title)) || {}
   const aliasF   = k => (aliasS.fields || []).find(f => new RegExp(k, 'i').test(f.key))?.val || ''
 
@@ -1809,7 +1816,6 @@ function renderPersona(text, nombre, nicho) {
 
   const out = document.getElementById('persona-output')
   out.innerHTML = html
-  out.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
 function copyPersona() {

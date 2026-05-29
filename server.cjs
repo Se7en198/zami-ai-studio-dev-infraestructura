@@ -237,93 +237,93 @@ async function generatePersona(nombre, nicho, faceUrl, bodyUrl) {
   if (bodyUrl) content.push({ type: 'image', source: { type: 'url', url: bodyUrl } })
   content.push({ type: 'text', text: `Eres un experto en crear perfiles de influencers virtuales para redes sociales y contenido digital.
 
-REGLA FÍSICA CRÍTICA — NO NEGOCIABLE:
-Para TODO lo relacionado con apariencia física (rasgos distintivos, lunares, pecas, tatuajes, piercings, cicatrices, marcas de nacimiento), describe ÚNICAMENTE lo que puedas confirmar claramente en las imágenes adjuntas. Si no lo ves con certeza → escribe "No visible". NUNCA inventes rasgos físicos que no estén claramente presentes en las imágenes. El resto de campos (vida, gustos, personalidad, hobbies, historia) SÍ son creativos — invéntale una vida completa, rica y aspiracional.
+REGLA FÍSICA CRÍTICA: Para rasgos físicos visibles (lunares, pecas, tatuajes, piercings, cicatrices), describe ÚNICAMENTE lo que veas claramente en las imágenes. Si no lo ves → escribe "No visible". El resto de campos (personalidad, gustos, historia) SÍ son creativos.
 
-Datos del personaje:
+Datos:
 - Nombre artístico: ${nombre}
-- Nicho de contenido: ${nicho}
+- Nicho: ${nicho}
+${faceUrl ? '- Imagen ROSTRO adjunta: úsala para color de ojos, tono de piel, cabello.' : ''}
+${bodyUrl ? '- Imagen CUERPO adjunta: úsala para altura estimada y constitución.' : ''}
 
-${faceUrl ? 'Te adjunto la imagen del ROSTRO — úsala para describir: color de ojos, tono de piel, color y estilo de cabello. Para rasgos distintivos (lunares, pecas): SOLO si son claramente visibles en la imagen; si no, escribe "Ninguno visible".' : ''}
-${bodyUrl ? 'Te adjunto la imagen del CUERPO — úsala para describir: altura estimada, constitución física y cualquier rasgo claramente visible.' : ''}
+RESPONDE ÚNICAMENTE con un array JSON válido. Sin texto antes ni después. Sin markdown. Sin bloques de código. Solo el JSON puro.
 
-Llena CADA campo de forma creativa, específica y coherente con el nicho y las imágenes. Hazla carismática, única, atractiva y SEXY — ella es una influencer aspiracional, magnética, siempre bella y poderosa en su imagen. Responde TODO en español. Escribe SOLO el template llenado, sin comentarios adicionales.
-
-💎 AI PERSONA TEMPLATE 💋
-
-📛 Alias
-Stage Name: ${nombre}
-Nombre Real: ___
-Usuario/Handle: @___
-Apodos: ___
-Edad: ___
-Cumpleaños: ___
-Signo Zodiacal: ___
-
-📏 Físico & Apariencia
-Altura: ___
-Talla de zapatos: ___
-Color/Estilo de cabello: ___
-Color de ojos: ___
-Tono de piel: ___
-Rasgos Distintivos (lunares, pecas, etc.): ___ (Solo si claramente visible en imágenes — si no: "Ninguno visible")
-
-🌍 Origen & Ubicación
-Etnicidad: ___
-Ciudad natal (lo que creen los fans): ___
-Ubicación actual (lo que asumen los fans): ___
-Cómo la conocieron los fans (momentos virales, rumores): ___
-
-🐾 Estilo de Vida
-Mascotas (nombre + tipo): ___
-Trabajo (si aplica): ___
-Familia (público o privado): ___
-
-🍣 Favoritos & Antojos
-Comida favorita: ___
-Restaurante favorito: ___
-Trago/Bebida favorita: ___
-Comida trampa: ___
-
-🎵 Vibe Musical
-Géneros musicales: ___
-Artistas favoritos: ___
-Canción de cabecera: ___
-
-🎬 Entretenimiento
-Géneros favoritos de películas/series: ___
-Series o películas top: ___
-Lo que ve para relajarse: ___
-
-💫 Hobbies & Hábitos
-(lista 3–5): ___
-Talento secreto: ___
-
-📲 Huella Digital
-Emojis más usados: ___
-Frases típicas en mensajes:
- - "___"
- - "___"
- - "___"
-Estilo al escribir (argot, coqueta, formal, reina de los audios, etc.): ___
-
-🔥 Persona de Contenido
-Nicho: ${nicho}
-Estilo de representación (glam, chica de al lado, dominante, etc.): ___
-Temas recurrentes: ___
-Lo que más les gusta a sus fans: ___
-Nivel de sensualidad del contenido: Siempre presente — outfits que marcan curvas, poses confiadas y poderosas, siempre bella y magnética sin importar el nicho.
-
-🖋️ Modificaciones Corporales
-Tatuajes: ___ (Solo si claramente visible en imágenes — si no: "No visible")
-Piercings: ___ (Solo si claramente visible en imágenes — si no: "No visible")
-Cicatrices/Marcas de nacimiento: ___ (Solo si claramente visible en imágenes — si no: "No visible")
-
-🧠 Personalidad
-3 Palabras que la describen: ___ ___ ___
-Nivel de coqueteo: 😇 Bajo / 😏 Medio / 😈 Alto
-Arquetipo (ej. femme fatale, chica de al lado, CEO baddie): ___
-Fantasía principal que encarna para sus fans: ___` })
+Estructura exacta (llena cada "val" en español, creativamente, coherente con el nicho):
+[
+  {"title":"📛 Alias","fields":[
+    {"key":"Stage Name","val":"${nombre}"},
+    {"key":"Nombre Real","val":""},
+    {"key":"Handle","val":"@"},
+    {"key":"Apodos","val":""},
+    {"key":"Edad","val":""},
+    {"key":"Cumpleaños","val":""},
+    {"key":"Signo Zodiacal","val":""}
+  ]},
+  {"title":"📏 Físico & Apariencia","fields":[
+    {"key":"Altura","val":""},
+    {"key":"Talla de zapatos","val":""},
+    {"key":"Color y estilo de cabello","val":""},
+    {"key":"Color de ojos","val":""},
+    {"key":"Tono de piel","val":""},
+    {"key":"Rasgos Distintivos","val":""}
+  ]},
+  {"title":"🌍 Origen & Ubicación","fields":[
+    {"key":"Etnicidad","val":""},
+    {"key":"Ciudad natal","val":""},
+    {"key":"Ubicación actual","val":""},
+    {"key":"Cómo la conocieron los fans","val":""}
+  ]},
+  {"title":"🐾 Estilo de Vida","fields":[
+    {"key":"Mascotas","val":""},
+    {"key":"Trabajo","val":""},
+    {"key":"Familia","val":""}
+  ]},
+  {"title":"🍣 Favoritos & Antojos","fields":[
+    {"key":"Comida favorita","val":""},
+    {"key":"Restaurante favorito","val":""},
+    {"key":"Bebida favorita","val":""},
+    {"key":"Comida trampa","val":""}
+  ]},
+  {"title":"🎵 Vibe Musical","fields":[
+    {"key":"Géneros musicales","val":""},
+    {"key":"Artistas favoritos","val":""},
+    {"key":"Canción de cabecera","val":""}
+  ]},
+  {"title":"🎬 Entretenimiento","fields":[
+    {"key":"Géneros favoritos","val":""},
+    {"key":"Series o películas top","val":""},
+    {"key":"Para relajarse","val":""}
+  ]},
+  {"title":"💫 Hobbies & Hábitos","fields":[
+    {"key":"Hobby 1","val":""},
+    {"key":"Hobby 2","val":""},
+    {"key":"Hobby 3","val":""},
+    {"key":"Talento secreto","val":""}
+  ]},
+  {"title":"📲 Huella Digital","fields":[
+    {"key":"Emojis más usados","val":""},
+    {"key":"Frase típica 1","val":""},
+    {"key":"Frase típica 2","val":""},
+    {"key":"Frase típica 3","val":""},
+    {"key":"Estilo al escribir","val":""}
+  ]},
+  {"title":"🔥 Persona de Contenido","fields":[
+    {"key":"Nicho","val":"${nicho}"},
+    {"key":"Estilo de representación","val":""},
+    {"key":"Temas recurrentes","val":""},
+    {"key":"Lo que más les gusta a sus fans","val":""}
+  ]},
+  {"title":"🖋️ Modificaciones Corporales","fields":[
+    {"key":"Tatuajes","val":""},
+    {"key":"Piercings","val":""},
+    {"key":"Cicatrices/Marcas","val":""}
+  ]},
+  {"title":"🧠 Personalidad","fields":[
+    {"key":"3 palabras que la describen","val":""},
+    {"key":"Nivel de coqueteo","val":""},
+    {"key":"Arquetipo","val":""},
+    {"key":"Fantasía principal","val":""}
+  ]}
+]` })
 
   const payload = JSON.stringify({
     model: ANTHROPIC_MODEL,
@@ -350,7 +350,14 @@ Fantasía principal que encarna para sus fans: ___` })
         try {
           const data = JSON.parse(raw)
           if (res.statusCode !== 200) throw new Error(`Anthropic ${res.statusCode}: ${JSON.stringify(data)}`)
-          resolve(data.content[0].text)
+          const text = data.content[0].text.trim()
+          const cleaned = text.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim()
+          try {
+            resolve(JSON.parse(cleaned))
+          } catch (parseErr) {
+            console.error('[PERSONA JSON PARSE ERROR] raw text:', text.slice(0, 300))
+            reject(new Error('Claude no devolvió JSON válido para el perfil. Intenta de nuevo.'))
+          }
         } catch (e) { reject(e) }
       })
     })
@@ -922,6 +929,9 @@ function isAllowedOrigin(origin) {
   return !origin || origin === `http://${HOST}:${PORT}`
 }
 
+const cachedHtml = fs.readFileSync(path.join(__dirname, 'server-ui.html'))
+const cachedHero = (() => { try { return fs.readFileSync(path.join(__dirname, 'Foto inicio', 'Nano Banana Pro_00001_.png')) } catch { return null } })()
+
 const server = http.createServer(async (req, res) => {
   const parsed   = url.parse(req.url, true)
   const pathname = parsed.pathname
@@ -946,19 +956,16 @@ const server = http.createServer(async (req, res) => {
 
   // Serve UI
   if (req.method === 'GET' && (pathname === '/' || pathname === '/index.html')) {
-    const html = fs.readFileSync(path.join(__dirname, 'server-ui.html'))
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' })
-    res.end(html)
+    res.end(cachedHtml)
     return
   }
 
   // Serve hero photo
   if (req.method === 'GET' && pathname === '/hero-photo.png') {
-    try {
-      const img = fs.readFileSync(path.join(__dirname, 'Foto inicio', 'Nano Banana Pro_00001_.png'))
-      res.writeHead(200, { 'Content-Type': 'image/png', 'Cache-Control': 'public, max-age=86400' })
-      res.end(img)
-    } catch { res.writeHead(404); res.end('Not found') }
+    if (!cachedHero) { res.writeHead(404); res.end('Not found'); return }
+    res.writeHead(200, { 'Content-Type': 'image/png', 'Cache-Control': 'public, max-age=86400' })
+    res.end(cachedHero)
     return
   }
 
