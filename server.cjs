@@ -484,35 +484,51 @@ async function generateContentPlan(nombre, nicho, persona, faceUrl, bodyUrl, wee
   if (faceUrl) content.push({ type: 'image', source: { type: 'url', url: faceUrl } })
   if (bodyUrl) content.push({ type: 'image', source: { type: 'url', url: bodyUrl } })
 
-  const historyBlock = weekHistory && weekHistory.length > 0
-    ? `\nHISTORIAL DE SEMANAS ANTERIORES:\n${weekHistory.map((w, i) => `Semana ${i + 1}: ${w.theme} — ${w.summary || ''}`).join('\n')}\n`
-    : '\nEs la primera semana de contenido de esta influencer.\n'
+  const noRepeatBlock = weekHistory && weekHistory.length > 0
+    ? `NO REPETIR — YA SE USARON EN SEMANAS ANTERIORES:\n${weekHistory.map((w, i) => {
+        const parts = [`Semana ${i + 1}: ${w.theme}`]
+        if (w.summary)       parts.push(`  Resumen: ${w.summary}`)
+        if (w.scenes)        parts.push(`  Escenas/locaciones: ${w.scenes}`)
+        if (w.hashtags)      parts.push(`  Hashtags usados: ${w.hashtags}`)
+        if (w.captions_tone) parts.push(`  Tono de captions: ${w.captions_tone}`)
+        return parts.join('\n')
+      }).join('\n\n')}`
+    : 'Es la primera semana de contenido de esta influencer — sin historial previo.'
 
-  content.push({ type: 'text', text: `Eres un director creativo de contenido digital especializado en influencers latinas para Instagram.
+  content.push({ type: 'text', text: `Eres el director creativo personal de esta influencer. Tu trabajo es capturar un momento real de su vida esta semana.
 
-PERFIL DEL PERSONAJE:
+IDENTIDAD DEL PERSONAJE:
 Nombre: ${nombre}
 Nicho: ${nicho}
 
-AI PERSONA COMPLETO:
+AI PERSONA COMPLETO (su vida real, personalidad, hábitos, lugares, frases, estilo):
 ${persona}
-${historyBlock}
-TAREA:
-Genera exactamente 8 piezas de contenido UGC para la semana (Lunes a Viernes). Tú decides el tema. No hay input del usuario.
-Distribuye los 8 posts así: Lunes 2, Martes 1, Miércoles 2, Jueves 1, Viernes 2.
+
+${noRepeatBlock}
+
+DIVERSIDAD OBLIGATORIA:
+- NINGÚN hashtag repetido del historial anterior
+- NINGUNA escena en la misma locación que semanas anteriores
+- NINGÚN tema genérico de influencer (matcha, brunch genérico, playa genérica, salida con amigas) a menos que esté explícitamente en su AI Persona
+- Los momentos deben nacer de SU vida específica, no de arquetipos de Instagram
+
+CÓMO ELEGIR EL TEMA DE ESTA SEMANA:
+1. Lee el AI Persona completo — sus hobbies, rutinas, lugares favoritos, relaciones, miedos, ambiciones, frases típicas
+2. Decide qué está viviendo ESTA persona ESTA semana específicamente: ¿un viaje corto? ¿una situación de trabajo? ¿un mood específico de temporada? ¿una decisión pequeña de su vida diaria? ¿algo nuevo que está probando? Que sea concreto y personal, no genérico
+3. Ese momento-de-vida real ES el hilo narrativo de la semana
+4. Los 8 posts son perspectivas o momentos distintos de ese mismo hilo — naturales, como si alguien la siguiera con una cámara su propio teléfono
 
 SLOTS Y SUS ASPECT RATIOS (fijos en el workflow — no puedes cambiarlos):
 - Slot 1: 9:16 → Story o Reel vertical (close-up, espontáneo, selfie POV)
 - Slot 2: 9:16 → Story o Reel vertical (close-up, espontáneo, selfie POV)
-- Slot 3: 1:1  → Square (carrusel cover, moodboard, post de marca)
-- Slot 4: 1:1  → Square (carrusel cover, moodboard, post de marca)
-- Slot 5: 3:4  → Feed portrait lifestyle (cuadrado largo, ambiente natural)
-- Slot 6: 4:5  → Feed portrait editorial (retrato de moda o lifestyle principal)
-- Slot 7: 1:1  → Square (tercer post de marca o engagement)
-- Slot 8: 4:5  → Feed portrait editorial (retrato secundario)
+- Slot 3: 1:1  → Square (momento estético, detalle del ambiente, objeto personal)
+- Slot 4: 1:1  → Square (momento candid o moodboard del hilo narrativo)
+- Slot 5: 3:4  → Feed portrait lifestyle (ambiente natural del hilo)
+- Slot 6: 4:5  → Feed portrait editorial (ella como protagonista del hilo)
+- Slot 7: 1:1  → Square (detalle o momento secundario del hilo)
+- Slot 8: 4:5  → Feed portrait editorial (cierre visual del hilo)
 
-Asigna el tipo de contenido al slot que mejor encaje con su formato.
-Stories/Reels → slots 1-2. Square → slots 3,4,7. Portrait editorial → slots 6,8. Lifestyle → slot 5.
+Distribuye los 8 posts en la semana de lunes a viernes según la narrativa del hilo. Tú decides cuántos por día.
 
 REGLAS FOTOGRÁFICAS UGC (aplica en TODOS los prompts):
 - "Shot on iPhone 15 Pro" — NUNCA studio lights

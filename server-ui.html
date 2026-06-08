@@ -2304,7 +2304,13 @@ async function pollWithRetry(runId, weekNum, faceUrl, bodyUrl, prompts) {
 async function generateContent2Weeks() {
   const nombre = selectedInfluencer?.nombre || document.getElementById('nombre').value.trim()
   const nicho  = selectedInfluencer?.nicho  || document.getElementById('nicho').value.trim()
-  const weekHistory = selectedInfluencer?.weeks?.map(w => ({ theme: w.theme, summary: w.summary })) || []
+  const weekHistory = selectedInfluencer?.weeks?.map(w => ({
+    theme: w.theme,
+    summary: w.summary || '',
+    scenes: w.plan?.week?.map(s => s.scene?.slice(0, 60) || '').filter(Boolean).join(' | ') || '',
+    hashtags: [...new Set(w.plan?.week?.flatMap(s => s.hashtags || []))].slice(0, 20).join(' '),
+    captions_tone: w.plan?.week?.map(s => s.caption?.slice(0, 40) || '').filter(Boolean).join(' | ') || ''
+  })) || []
   const btn    = document.getElementById('btn-generate-plan')
 
   if (!generatedPersonaText) { setContentPlanStatus('Genera el perfil completo primero.', 'error'); return }
@@ -2368,7 +2374,13 @@ async function generateContent2Weeks() {
     setWeekStatus(2, 'planning', 'Diseñando plan Semana 2...')
     setWcStep(2, 'plan', 'active')
     startWeekTimer(2)
-    const extHistory = [...weekHistory, { theme: d1.plan.theme, summary: d1.plan.summary || '' }]
+    const extHistory = [...weekHistory, {
+      theme: d1.plan.theme,
+      summary: d1.plan.summary || '',
+      scenes: d1.plan.week?.map(s => s.scene?.slice(0, 60) || '').filter(Boolean).join(' | ') || '',
+      hashtags: [...new Set(d1.plan.week?.flatMap(s => s.hashtags || []))].slice(0, 20).join(' '),
+      captions_tone: d1.plan.week?.map(s => s.caption?.slice(0, 40) || '').filter(Boolean).join(' | ') || ''
+    }]
 
     const r2 = await fetch('/api/generate-content-plan', {
       method: 'POST',
