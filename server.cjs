@@ -43,8 +43,8 @@ const WORKFLOW_SEXY_CONTEXTO = (() => {
 const SUPABASE_URL          = process.env.VITE_SUPABASE_URL || ''
 const SUPABASE_KEY          = process.env.VITE_SUPABASE_ANON_KEY || ''
 const SUPABASE_BUCKET       = process.env.SUPABASE_BUCKET || 'zami-images'
-const PORT                  = 3333
-const HOST                  = '127.0.0.1'
+const PORT                  = process.env.PORT || 3333
+const HOST                  = process.env.HOST || '0.0.0.0'
 const CD_BASE               = 'api.comfydeploy.com'
 const DATA_DIR              = path.join(__dirname, 'data')
 const INFLUENCERS_FILE      = path.join(DATA_DIR, 'influencers.json')

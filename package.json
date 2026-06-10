@@ -1,0 +1,12 @@
+{
+  "name": "zami-ai-studio",
+  "version": "1.0.0",
+  "description": "Zami AI Studio — influencer virtual automation pipeline",
+  "main": "server.cjs",
+  "scripts": {
+    "start": "node server.cjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
