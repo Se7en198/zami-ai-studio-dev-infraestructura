@@ -41,7 +41,7 @@ REGLAS OBLIGATORIAS:
 
 | Fase | Estado | Rama/PR | Fecha | Notas |
 |---|---|---|---|---|
-| F0 — Red de seguridad | ⬜ Pendiente | — | — | — |
+| F0 — Red de seguridad | ✅ Completada | claude/workspace-analysis-plan-sze5ed | 2026-06-10 | /api/health, 14 smoke tests, CI, tag v1.1-pre-refactor |
 | F1 — Modularización | ⬜ Pendiente | — | — | depende de F0 |
 | F2 — Jobs + estado real ★ | ⬜ Pendiente | — | — | depende de F1 |
 | F3 — UI profesional | ⬜ Pendiente | — | — | depende de F2 |
