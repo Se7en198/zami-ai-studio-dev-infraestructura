@@ -45,6 +45,7 @@ const SUPABASE_KEY          = process.env.VITE_SUPABASE_ANON_KEY || ''
 const SUPABASE_BUCKET       = process.env.SUPABASE_BUCKET || 'zami-images'
 const PORT                  = process.env.PORT || 3333
 const HOST                  = process.env.HOST || '0.0.0.0'
+const PKG_VERSION           = (() => { try { return require('./package.json').version } catch { return '0.0.0' } })()
 const CD_BASE               = 'api.comfydeploy.com'
 const DATA_DIR              = path.join(__dirname, 'data')
 const INFLUENCERS_FILE      = path.join(DATA_DIR, 'influencers.json')
@@ -1225,6 +1226,18 @@ function extractImages(outputs) {
   return results
 }
 
+// Filtra outputs de contenido (ZCS1-ZCS8) y los ordena numéricamente.
+// skip9-skip14 quedan excluidos porque no matchean el patrón ZCS.
+function filterAndSortZcs(images) {
+  return (images || [])
+    .filter(u => /\/ZCS\d+[_]/.test(u) || /[?&]file=ZCS\d+/.test(u) || u.split('/').pop().startsWith('ZCS'))
+    .sort((a, b) => {
+      const aNum = parseInt(a.split('/').pop().match(/ZCS(\d+)/)?.[1] || '0')
+      const bNum = parseInt(b.split('/').pop().match(/ZCS(\d+)/)?.[1] || '0')
+      return aNum - bNum
+    })
+}
+
 // ── HTTP server ──────────────────────────────────────────────────────────────
 function readBody(req) {
   return new Promise((resolve, reject) => {
@@ -1324,6 +1337,25 @@ const server = http.createServer(async (req, res) => {
   if (!isAllowedOrigin(origin)) {
     res.writeHead(403)
     res.end('Forbidden')
+    return
+  }
+
+  // GET /api/health — healthcheck para Railway/monitoring (no expone secretos)
+  if (req.method === 'GET' && pathname === '/api/health') {
+    let influencerCount = 0
+    try { influencerCount = loadInfluencers().influencers.length } catch {}
+    json(res, 200, {
+      ok: true,
+      version: PKG_VERSION,
+      uptimeSec: Math.floor(process.uptime()),
+      influencers: influencerCount,
+      env: {
+        comfydeploy: Boolean(API_KEY),
+        anthropic:   Boolean(ANTHROPIC_KEY),
+        supabase:    Boolean(SUPABASE_URL && SUPABASE_KEY),
+        comfycloud:  Boolean(COMFYCLOUD_API_KEY),
+      },
+    })
     return
   }
 
@@ -1828,29 +1860,15 @@ const server = http.createServer(async (req, res) => {
 
         if (st === 'success') {
           console.log('CDC OUTPUTS:', JSON.stringify(data.outputs, null, 2))
-          const images = extractImages(data.outputs)
           // Filtrar solo los ZCS1-ZCS8 (skip9-skip14 se excluyen automáticamente)
-          const contentImages = images
-            .filter(u => /\/ZCS\d+[_]/.test(u) || /[?&]file=ZCS\d+/.test(u) || u.split('/').pop().startsWith('ZCS'))
-            .sort((a, b) => {
-              const aNum = parseInt(a.split('/').pop().match(/ZCS(\d+)/)?.[1] || '0')
-              const bNum = parseInt(b.split('/').pop().match(/ZCS(\d+)/)?.[1] || '0')
-              return aNum - bNum
-            })
+          const contentImages = filterAndSortZcs(extractImages(data.outputs))
           console.log(`  [CDC] contentImages: ${contentImages.length}`, contentImages.map(u => u.split('/').pop()))
           return json(res, 200, { status: 'success', contentImages })
         }
         if (['failed', 'cancelled', 'timeout'].includes(st)) {
           console.log(`[CDC-ERROR] ${cdcId} -> ${st}`)
           // Try to salvage partial images before declaring failure
-          const partialRaw = extractImages(data.outputs)
-          const contentImages = partialRaw
-            .filter(u => /\/ZCS\d+[_]/.test(u) || /[?&]file=ZCS\d+/.test(u) || u.split('/').pop().startsWith('ZCS'))
-            .sort((a, b) => {
-              const aNum = parseInt(a.split('/').pop().match(/ZCS(\d+)/)?.[1] || '0')
-              const bNum = parseInt(b.split('/').pop().match(/ZCS(\d+)/)?.[1] || '0')
-              return aNum - bNum
-            })
+          const contentImages = filterAndSortZcs(extractImages(data.outputs))
           console.log(`[CDC-PARTIAL] ${contentImages.length}/8 imágenes recuperadas de run fallido`)
           if (contentImages.length > 0) {
             return json(res, 200, { status: 'partial', contentImages, failedCount: 8 - contentImages.length, message: st })
@@ -1893,6 +1911,23 @@ const server = http.createServer(async (req, res) => {
   res.end('Not found')
 })
 
+// Exporta funciones puras para tests (test/smoke.test.cjs). El server solo
+// escucha cuando se ejecuta directamente (node server.cjs), no al hacer require.
+module.exports = {
+  server,
+  _internal: {
+    extractImages,
+    filterAndSortZcs,
+    inferBodyParamOverridesFromText,
+    normalizeAionPayload,
+    sanitizeLoneSurrogates,
+    buildBodyPromptReinforcement,
+    parseComfyCloudErrorMessage,
+  },
+}
+
+if (require.main === module) {
+
 server.on('error', err => {
   if (err.code === 'EADDRINUSE') {
     console.error(`Puerto ${HOST}:${PORT} ocupado. Cierra el proceso que usa ese puerto y vuelve a ejecutar iniciar.bat.`)
@@ -1922,3 +1957,5 @@ server.listen(PORT, HOST, () => {
     process.exit(1)
   }
 })
+
+} // end require.main guard
